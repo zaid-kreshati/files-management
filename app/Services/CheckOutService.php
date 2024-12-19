@@ -2,11 +2,11 @@
 
 namespace App\Services;
 
+use App\Events\FileTraced;
 use App\Repositories\CheckFileRepository;
 use App\Repositories\CheckOutRepository;
 use App\Repositories\GroupRepository;
 use Exception;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use SebastianBergmann\Diff\Differ;
@@ -42,8 +42,8 @@ class CheckOutService
         }
 
         // Register checkouts 
-        $this->checkOutRepository->checkOutFile($existingFile->id , Auth::id() , 'checkout');
-        
+        $this->checkOutRepository->checkOutFile($existingFile->id, Auth::id(), 'checkout');
+
         // Read contents of the uploaded file
         $uploadedFileContent = file_get_contents($uploadedFile->getRealPath());
 
@@ -72,6 +72,21 @@ class CheckOutService
             'change_type' => 'modified',
             'description' => "File replaced by user: " . Auth::user()->name . " \n " . $differences,
         ]);
+
+        // ! Tracing -----
+
+        // Dispatch the tracing event with before & after
+        event(new FileTraced(
+            $existingFile,
+            Auth::user(),
+            'edit',
+            $differences,
+            $existingFileContent,       // Before
+            $uploadedFileContent       // After
+        ));
+
+
+        // !--------------
 
         return [
             'success' => true,

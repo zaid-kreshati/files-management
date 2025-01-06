@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Invitation;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
-
+use Illuminate\Support\Facades\Log;
 class InvitationService
 {
     protected $invitationRepository;
@@ -29,6 +29,9 @@ class InvitationService
     {
 
         $existing = $this->invitation->where('group_id', $groupId)->where('receiver_id', $userId)->first();
+        Log::info("existing");
+        Log::info($existing);
+
         if ($existing) {
             throw new Exception("The invitaiton already exist");
         }
@@ -49,7 +52,7 @@ class InvitationService
     public function inviteAllUsers(int $groupId, array $userIds): bool
     {
         $group = $this->groupRepository->findById($groupId);
-        
+
         if (!$group) {
             throw new Exception("Group not found");
         }
@@ -80,6 +83,8 @@ class InvitationService
 
         // Handle association if response is "accepted"
         if ($response === 'accepted') {
+            $this->groupRepository->addMember($invitation->group_id, $invitation->receiver_id);
+
             $group = $invitation->group;
             if (!$group->members()->where('user_id', $invitation->receiver_id)->exists()) {
                 $group->members()->attach($invitation->receiver_id ,['status' => 'accepted']);

@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use SebastianBergmann\Diff\Differ;
 use SebastianBergmann\Diff\Output\UnifiedDiffOutputBuilder;
+use Illuminate\Support\Facades\Log;
 
 class CheckOutService
 {
@@ -26,14 +27,12 @@ class CheckOutService
         $this->groupRepository = $groupRepository;
     }
 
-    public function uploadAndReplaceFileInGroup(int $groupId, $uploadedFile)
+    public function uploadAndReplaceFileInGroup(int $groupId, string $fileName)
     {
         $group = $this->groupRepository->findById($groupId);
         if (!$group) {
             throw new Exception("Group not found.");
         }
-
-        $fileName = $uploadedFile->getClientOriginalName();
 
         // Check if the file exists in the group
         $existingFile = $this->checkOutRepository->findFileInGroupByName($groupId, $fileName);
@@ -41,11 +40,19 @@ class CheckOutService
             throw new Exception("The specified file does not exist in this group.");
         }
 
-        // Register checkouts 
-        $this->checkOutRepository->checkOutFile($existingFile->id , Auth::id() , 'checkout');
-        
+
+        // Register checkouts
+        $this->checkOutRepository->checkOutFile($existingFile->id  , 'checkout');
+        $path = Storage::disk('private')->path("group_files/$fileName");
+
+        Log::info('path');
+        Log::info($path);
+
         // Read contents of the uploaded file
-        $uploadedFileContent = file_get_contents($uploadedFile->getRealPath());
+        $uploadedFileContent = file_get_contents($path);
+
+        Log::info('uploadedFileContent');
+        Log::info($uploadedFileContent);
 
         // Read contents of the existing file
         $existingFileContent = Storage::get($existingFile->path);
@@ -54,15 +61,15 @@ class CheckOutService
         $differences = $this->compareFiles11($existingFileContent, $uploadedFileContent);
 
         $backupPath = "backups/{$fileName}_" . now()->timestamp;
-        Storage::copy($existingFile->path, $backupPath);
+        // Storage::copy($existingFile->path, $backupPath);
         $this->chekFileRepository->createBackup(
             $existingFile->id,
             $backupPath,
         );
 
         // Replace the file (overwrite the existing path)
-        $newPath = $uploadedFile->storeAs('files', $fileName);
-        $existingFile->update(['path' => $newPath, 'status' => 'free']);
+        // $newPath = $uploadedFile->storeAs('files', $fileName);
+        $existingFile->update([ 'status' => 'free']);
 
 
         // Log changes in the audit trail

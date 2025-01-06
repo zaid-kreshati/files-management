@@ -52,20 +52,62 @@ class RolePermissionsSeeder extends Seeder
         $usertRole->syncPermissions($userPermissions);
 
         // Create users and assign roles
-        // admin
-        $admin = User::factory()->create([
-            'name' => 'amin',
-            'email' => 'amin@admin.com',
+        // user1
+        $user1 = User::factory()->create([
+            'name' => 'Noor',
+            'email' => 'noor@user.com',
             'password' => bcrypt('password'),
         ]);
-        $admin->assignRole($adminRole);
+        $user1->assignRole($adminRole);
 
-        // user
-        $User = User::factory()->create([
-            'name' => 'zaid',
+        // user2
+        $user2 = User::factory()->create([
+            'name' => 'Zaid',
             'email' => 'zaid@user.com',
             'password' => bcrypt('password'),
         ]);
-        $User->assignRole($usertRole);
+        $user2->assignRole($usertRole);
+
+         // user2
+         $user3 = User::factory()->create([
+            'name' => 'Hiba',
+            'email' => 'hiba@user.com',
+            'password' => bcrypt('password'),
+        ]);
+        $user3->assignRole($usertRole);
+
+         // user4
+         $user4 = User::factory()->create([
+            'name' => 'Rifaee',
+            'email' => 'rifaee@user.com',
+            'password' => bcrypt('password'),
+        ]);
+        $user4->assignRole($usertRole);
+
+         // user5
+         $user5 = User::factory()->create([
+            'name' => 'Hedar',
+            'email' => 'hedar@user.com',
+            'password' => bcrypt('password'),
+        ]);
+        $user5->assignRole($usertRole);
+
+       
+
+        // Generate 100 users
+        for ($i = 1; $i <= 100; $i++) {
+            $user = User::create([
+                'name' => "User $i",
+                'email' => "user$i@example.com",
+                'password' => bcrypt('password'),
+            ]);
+            $user->assignRole($usertRole);
+        }
+
+
+
+
+
+
     }
 }

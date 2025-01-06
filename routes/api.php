@@ -4,12 +4,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\api\AuthController_api;
 use App\Http\Middleware\ValidateToken;
-use App\Http\Controllers\GroupController;
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\checkOutController;
-use App\Http\Controllers\ChecksFilesController;
-use App\Http\Controllers\InvitationController;
-use App\Http\Controllers\FileController;
+use App\Http\Controllers\api\GroupController;
+use App\Http\Controllers\api\AuthController;
+use App\Http\Controllers\api\checkOutController;
+use App\Http\Controllers\api\ChecksFilesController;
+use App\Http\Controllers\api\InvitationController;
+use App\Http\Controllers\api\FileController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -42,11 +42,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/{groupId}/invite/{user_id}', [InvitationController::class, 'sendInvitation']);
         Route::post('/{groupId}/invite', [InvitationController::class, 'sendBulkInvitations']);
 
-        // Get Memebers 
+        // Get Memebers
         Route::get('/{groupId}/members', [GroupController::class, 'getGroupMembers']);
 
-        
-        // Upload Files 
+
+        // Upload Files
         Route::post('/{groupId}/files/upload', [FileController::class, 'uploadFile']);
         // get file for approved
         Route::get('/{groupId}/files/pending', [FileController::class, 'getFilesForApproval']);

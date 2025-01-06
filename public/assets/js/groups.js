@@ -1,0 +1,395 @@
+// Helper function to get the CSRF token
+function getCsrfToken() {
+    return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+}
+
+
+// Function to create a group card dynamically
+function createGroupCard(group) {
+    return `
+        <div class="col mb-5" id="group-${group.id}">
+            <div class="card h-100" data-group-id="${group.id}">
+                <div class="dropdown">
+                    <img src="icons/three_dots_icon.png" alt="three-dots-icon"
+                        class="three-dots-icon" id="dropdown-${group.id}" data-bs-toggle="dropdown"
+                        aria-expanded="false" data-id="${group.id}" data-name="${group.name}">
+                    <ul class="dropdown-menu" aria-labelledby="dropdown-${group.id}">
+                        <li>
+                            <button class="dropdown-item edit-group-btn" data-id="${group.id}" data-name="${group.name}" data-bs-toggle="modal" data-bs-target="#editGroupModal">
+                                Edit Group
+                            </button>
+                        </li>
+                        <li>
+                            <button class="dropdown-item delete-group-btn" data-id="${group.id}">
+                                Delete Group
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Group Image -->
+                <div class="group-image-container">
+                    <img class="card-img-top" src="icons/group_of_file.png" alt="${group.name}"
+                        data-group-id="${group.id}" data-group-name="${group.name}">
+                </div>
+
+                <div class="card-body p-4">
+                    <div class="text-center">
+                        <h5 class="fw-bolder">${group.name}</h5>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+}
+
+
+
+$('#createGroupForm').on('submit', function (e) {
+    e.preventDefault();
+
+    const submitButton = $(this).find('button[type="submit"]');
+    submitButton.prop('disabled', true).text('Creating...');
+
+    const groupName = $('#groupName').val();
+
+    $.ajax({
+        url: '/groups/store',
+        method: 'POST',
+        data: { name: groupName, _token: getCsrfToken() },
+        success: function (response) {
+            if (response.success) {
+                Swal.fire('Success', 'Group created successfully', 'success');
+
+                $('#createGroupModal').modal('hide');
+                $('#groupName').val('');
+
+                $('#groupcontainer').append(createGroupCard(response.data.group));
+
+            } else {
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Failed to create group',
+                    icon: 'error',
+                });
+            }
+        },
+        error: function (xhr, status, error) {
+            console.error('AJAX Error:', { status, error, xhr });
+            Swal.fire('Error', 'Something went wrong. Please try again.', 'error');
+        },
+        complete: function () {
+            submitButton.prop('disabled', false).text('Create Group');
+        }
+    });
+});
+
+$(document).on('click', '.edit-group-btn', function () {
+    const groupId = $(this).data('id');
+    const groupName = $(this).data('name');
+
+        $('#editGroupForm').data('id', groupId);
+        $('#editGroupName').val(groupName);
+        $.ajax({
+            url: `/groups/check-owner/${groupId}`,
+            method: 'GET',
+            success: function (response) {
+                if (response.success) {
+                    $('#editGroupModal').modal('show');
+                }
+                else{
+                    $('#editGroupModal').modal('hide');
+                    Swal.fire('Error', 'You are not the owner of this group', 'error');
+                }
+            },
+            error: function (error) {
+                console.log(error);
+                Swal.fire('Error', error.responseJSON.message, 'error');
+            },
+        })
+
+    });
+
+    // Listen for the edit group form submission
+$('#editGroupForm').on('submit', function (e) {
+    e.preventDefault(); // Prevent the default form submission
+
+    const submitButton = $(this).find('button[type="submit"]');
+    submitButton.prop('disabled', true).text('Updating...');
+
+    console.log('Edit group form submitted');
+
+    // Retrieve group ID and name
+    const groupId = $(this).data('id'); // Ensure the form has the correct data-id attribute
+    const groupName = $('#editGroupName').val();
+
+    console.log(groupId, groupName);
+
+    $.ajax({
+        url: `/groups/${groupId}/edit`, // Correct API endpoint
+        method: 'PUT',
+        data: {
+            name: groupName,
+            _token: getCsrfToken()
+        },
+        success: function (response) {
+            console.log('Group updated successfully:', response);
+
+            // Hide the modal
+            $('#editGroupModal').modal('hide');
+
+            // Clear the input field
+            $('#editGroupName').val('');
+
+            // Update the group name on the page dynamically
+            $(`#group-${groupId} .fw-bolder`).text(groupName);
+
+            // Show success notification
+            Swal.fire('Success', 'Group updated successfully!', 'success');
+        },
+        error: function (xhr, status, error) {
+            console.error('AJAX Error:', { status, error, xhr });
+
+            // Show error notification
+            Swal.fire('Error', 'Something went wrong. Please try again.', 'error');
+        },
+        complete: function () {
+            submitButton.prop('disabled', false).text('Save Changes');
+        }
+    });
+});
+
+
+// Delete group logic
+$(document).on('click', '.delete-group-btn', function () {
+    const groupId = $(this).data('id');
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "This will delete the group permanently.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, delete it!',
+        cancelButtonText: 'Cancel',
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.ajax({
+                url: `/groups/${groupId}/delete`,
+                    method: 'DELETE',
+                    data: { _token: getCsrfToken() },
+                    success: function (response) {
+                        if (response.success) {
+                            $(`#group-${groupId}`).fadeOut('slow', function () {
+                                $(this).remove();
+                            });
+
+                            Swal.fire('Deleted!', 'Group has been deleted.', 'success');
+                        } else {
+                            Swal.fire('Error', 'Failed to delete group.', 'error');
+                        }
+                    },
+                    error: function (error) {
+                        console.log(error);
+                        Swal.fire('Error', error.responseJSON.message, 'error');
+                    },
+                });
+            }
+        });
+});
+
+
+let page = 1; // Current page
+let loading = false; // To prevent multiple requests
+let hasMorePages = true; // To check if more pages are available
+let isSearching = false; // Flag to manage search and pagination states
+
+// Function to fetch and load groups
+function loadMoreGroups() {
+    if (isSearching || loading || !hasMorePages) return;
+    loading = true;
+
+    $('#loading-spinner').show();
+    console.log(page);
+
+    $.ajax({
+        url: `/groups/allwithpagination`,
+        method: 'POST',
+        data: {
+            page: page,
+            _token: getCsrfToken()
+        },
+        success: function (response) {
+            if (response.data.groups.data.length) {
+                let html = '';
+                response.data.groups.data.forEach(group => {
+                    html += createGroupCard(group);
+                });
+                $('#groupcontainer').append(html);
+                page++; // Increment the page
+            } else {
+                hasMorePages = false; // No more pages to load
+            }
+        },
+        error: function () {
+            console.error('An error occurred while fetching groups.');
+        },
+        complete: function () {
+            loading = false;
+            let timeout = setTimeout(() => {
+                $('#loading-spinner').hide();
+            }, 2000);
+        }
+    });
+}
+
+// Search functionality
+(function () {
+    const searchBox = $('#searchBox');
+    const groupContainer = $('#groupd');
+
+    // Debounce function to limit the frequency of the search
+    function debounce(func, wait) {
+        let timeout;
+        return function () {
+            const context = this;
+            const args = arguments;
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(context, args), wait);
+        };
+    }
+
+    // Reset pagination variables
+    function resetPagination() {
+        page = 1;
+        loading = false;
+        hasMorePages = true;
+    }
+
+    searchBox.on('input',
+        debounce(function () {
+            const query = this.value.toLowerCase().trim();
+
+            if (query === '') {
+                isSearching = false;
+                $('#groupcontainer').html('');
+                resetPagination();
+            } else {
+                isSearching = true;
+                resetPagination();
+
+                $.ajax({
+                    url: '/groups/search',
+                    method: 'POST',
+                    data: {
+                        search: query,
+                        _token: getCsrfToken()
+                    },
+                    beforeSend: function () {
+                        $('#loading-spinner').show();
+                    },
+                    success: function (response) {
+                        groupContainer.html(response.data);
+                    },
+                    error: function () {
+                        alert('An error occurred while searching. Please try again.');
+                    },
+                    complete: function () {
+                        $('#loading-spinner').hide();
+                    }
+                });
+            }
+        }, 300)
+    );
+})();
+
+$(document).on('click', '.card-img-top', function () {
+    const groupId = $(this).data('group-id');
+    handleGroupClick(groupId);
+});
+// Handle group clicks
+function handleGroupClick(groupId) {
+    console.log('Group clicked:', groupId);
+
+    if (groupId) {
+        $.ajax({
+            url: `/files/${groupId}/all`,
+            method: 'GET',
+            headers: {
+                'X-CSRF-TOKEN': getCsrfToken(),
+            },
+            success: function (response) {
+                console.log('Group details:', response);
+                window.location.href = `/files/${groupId}/all`;
+                // Handle navigation or display details here
+            },
+            error: function (xhr, status, error) {
+                console.error('Failed to get group details:', error);
+            },
+        });
+    } else {
+        console.error('Invalid group ID:', groupId);
+    }
+}
+
+
+// Debounce function to limit the frequency of scroll event handling
+function debounce(func, wait) {
+    let timeout;
+    return function () {
+        const context = this;
+        const args = arguments;
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(context, args), wait);
+    };
+}
+
+// Attach infinite scroll handler
+$(document).ready(function () {
+    function attachScrollHandler() {
+        $(window).scroll(
+            debounce(() => {
+                if (!hasMorePages || isSearching) return; // Stop scrolling if no more pages or searching
+                if ($(window).scrollTop() + $(window).height() > $(document).height() - 100) {
+                    loadMoreGroups();
+                }
+            }, 250)
+        );
+    }
+
+    loadMoreGroups(); // Load the first page
+    attachScrollHandler(); // Attach the scroll handler
+});
+
+$(document).on('click', '#invitation-response-btn', function () {
+    const invitationId = $(this).data('id');
+    const response = $(this).data('response');
+    console.log('Invitation ID:', invitationId);
+    $.ajax({
+        url: `/group/invitations/${invitationId}/respond`,
+        method: 'POST',
+        data: {
+            response: response,
+            _token: getCsrfToken()
+        },
+        success: function (response) {
+            if (response.success) {
+                console.log(response);
+                if (response.data.status === 'accepted') {
+                    $('#groupcontainer').append(createGroupCard(response.data.group));
+
+                    Swal.fire('Success', response.message, 'success');
+                } else {
+                    Swal.fire('Rejected', response.message);
+                }
+
+                $(`#invitation-request-${invitationId}`).remove();
+                if($('#invitation-request-container').children().length==0){
+                    $('#invitation-request-container').hide();
+                }
+            }
+        },
+    });
+});
+
+
+
+
+

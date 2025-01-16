@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('file_id')->references('id')->on('files')->onDelete('cascade');
             $table->foreignId('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->enum('change_type' , ['modified' , 'delete' , 'create']);
+            $table->enum('change_type' , ['check_in' , 'check_out' , 'modified' , 'delete' , 'create']);
             $table->string('description');
             $table->timestamps();
         });

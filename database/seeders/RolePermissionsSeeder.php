@@ -92,10 +92,10 @@ class RolePermissionsSeeder extends Seeder
         ]);
         $user5->assignRole($usertRole);
 
-       
+
 
         // Generate 100 users
-        for ($i = 1; $i <= 100; $i++) {
+        for ($i = 1; $i <= 10; $i++) {
             $user = User::create([
                 'name' => "User $i",
                 'email' => "user$i@example.com",

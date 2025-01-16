@@ -9,7 +9,7 @@ use App\Models\Group;
 
 class FileRepository
 {
-    
+
     public function create(array $data): File
     {
         return File::create($data);
@@ -41,6 +41,7 @@ class FileRepository
             $query->where('groups.id', $groupId);
         })
             ->where('approval_status', 'approved')
+            ->with('backups')
             ->get();
     }
 

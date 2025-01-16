@@ -27,8 +27,10 @@ class CheckOutService
         $this->groupRepository = $groupRepository;
     }
 
-    public function uploadAndReplaceFileInGroup(int $groupId, string $fileName)
+    public function checkOutFileInGroup(int $groupId, string $fileName)
     {
+        DB::beginTransaction();
+        try {
         $group = $this->groupRepository->findById($groupId);
         if (!$group) {
             throw new Exception("Group not found.");
@@ -37,7 +39,17 @@ class CheckOutService
         // Check if the file exists in the group
         $existingFile = $this->checkOutRepository->findFileInGroupByName($groupId, $fileName);
         if (!$existingFile) {
-            throw new Exception("The specified file does not exist in this group.");
+            throw new Exception("The file $fileName does not exist in this group.");
+        }
+
+        if($existingFile->status == 'free'){
+            throw new Exception("The file $fileName is already checked out.");
+        }
+
+        $checkInUser = $this->chekFileRepository->findUserByFileId($existingFile->id);
+        $user_id = Auth::id();
+        if($checkInUser->id != $user_id){
+            throw new Exception("You cannot check out the file $fileName because you are not the one who checked it in.($checkInUser->name)");
         }
 
 
@@ -60,8 +72,13 @@ class CheckOutService
         // Compare the files
         $differences = $this->compareFiles11($existingFileContent, $uploadedFileContent);
 
-        $backupPath = "backups/{$fileName}_" . now()->timestamp;
-        // Storage::copy($existingFile->path, $backupPath);
+        $backupPath = storage_path('backups/'.$fileName.'_'.now()->format('Y-m-d-H-i-s').'.'.pathinfo($existingFile->path, PATHINFO_EXTENSION));
+        Log::info('backupPath');
+        Log::info($backupPath);
+        $oldPath = storage_path('app/private/'.$existingFile->path);
+        Log::info('oldPath');
+        Log::info($oldPath);
+         copy($oldPath, $backupPath);
         $this->chekFileRepository->createBackup(
             $existingFile->id,
             $backupPath,
@@ -79,12 +96,20 @@ class CheckOutService
             'change_type' => 'modified',
             'description' => "File replaced by user: " . Auth::user()->name . " \n " . $differences,
         ]);
+        DB::commit();
+
 
         return [
             'success' => true,
             'message' => "File successfully replaced.",
             'differences' => $differences,
         ];
+        } catch (Exception $e) {
+            DB::rollBack();
+            throw $e;
+
+            // return ['success' => false, 'message' => $e->getMessage()];
+        }
     }
 
     private function compareFiles11(string $existingContent, string $uploadedContent): string

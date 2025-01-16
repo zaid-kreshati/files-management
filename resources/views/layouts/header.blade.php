@@ -32,7 +32,7 @@
     <header class="header">
         {{"hello"}}
         <div>
-            <img src="{{ asset('icons/it-logo.png') }}" alt="IT_Logo" width="100" height="80">
+            <img src="{{ asset('icons/it-logo.png') }}" alt="IT_Logo" class="it-logo">
         </div>
         <nav class="nav">
             <a href="{{ route('home') }}">
@@ -41,7 +41,7 @@
             <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                 {{ __('Logout') }}
             </a>
-            <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+            <form id="logout-form" action="{{ route('logout') }}" method="POST" >
                 @csrf
             </form>
 

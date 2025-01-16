@@ -21,46 +21,47 @@ use App\Http\Controllers\api\FileController;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+// Auth
+Route::controller(AuthController::class)->group(function () {
+    Route::post('register/user', 'registerClient');
+    Route::post('register/admin', 'registerAdmin');
+    Route::post('login', 'login');
+    Route::post('logout', 'logout')->middleware('auth:sanctum');
 });
 
-Route::post('register/user', [AuthController::class, 'registerClient']);
-Route::post('register/admin', [AuthController::class, 'registerAdmin']);
-Route::post('login', [AuthController::class, 'login']);
-Route::post('logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
-
-
-Route::middleware('auth:sanctum')->group(function () {
-    Route::group(['prefix' => 'groups'], function () {
-        Route::post('/create', [GroupController::class, 'store'])->name('groups.store');
-        Route::delete('/delete/{id}', [GroupController::class, 'destroy'])->name('groups.destroy');
-        Route::get('/show/{id}', [GroupController::class, 'show'])->name('groups.show');
-        Route::get('/all', [GroupController::class, 'index'])->name('groups.index');
-
-        // Invitaiton to group
-        Route::post('/{groupId}/invite/{user_id}', [InvitationController::class, 'sendInvitation']);
-        Route::post('/{groupId}/invite', [InvitationController::class, 'sendBulkInvitations']);
-
-        // Get Memebers
-        Route::get('/{groupId}/members', [GroupController::class, 'getGroupMembers']);
-
-
-        // Upload Files
-        Route::post('/{groupId}/files/upload', [FileController::class, 'uploadFile']);
-        // get file for approved
-        Route::get('/{groupId}/files/pending', [FileController::class, 'getFilesForApproval']);
-        Route::post('/file/{fileId}/' , [FileController::class , 'approveFile']);
-        // Get all Files in specific group
-        Route::get('/{groupId}/files/all' , [FileController::class , 'getApprovedFiles']);
-
-    });
+// Group
+Route::controller(GroupController::class)->group(function () {
+    Route::post('groups/create', 'store');
+    Route::delete('groups/delete/{id}', 'destroy');
+    Route::get('groups/show/{id}', 'show');
+    Route::get('groups/all', 'index');
+    Route::get('groups/{groupId}/members', 'getGroupMembers');
 });
 
-// Invitaions Response
-Route::post('/invitations/{invitation}/respond', [InvitationController::class, 'respondToInvitation'])->middleware('auth:sanctum');
-Route::get('/invitations', [InvitationController::class, 'getUserInvitations'])->middleware('auth:sanctum');
+// Invitaiton to group
+Route::controller(InvitationController::class)->group(function () {
+    Route::post('groups/{groupId}/invite/{user_id}', 'sendInvitation');
+    Route::post('groups/{groupId}/invite', 'sendBulkInvitations');
+    Route::post('/invitations/{invitation}/respond', 'respondToInvitation');
+    Route::get('/invitations', 'getUserInvitations');
+});
+
+//Files
+Route::controller(FileController::class)->group(function () {
+    Route::post('/{groupId}/files/upload', 'uploadFile');
+    Route::get('/{groupId}/files/pending', 'getFilesForApproval');
+    Route::post('/file/{fileId}/', 'approveFile');
+    Route::get('/{groupId}/files/all', 'getApprovedFiles');
+});
 
 // Check in file
-Route::post('/files/checkIn' , [ChecksFilesController::class , 'checkInFiles'])->middleware('auth:sanctum');
-Route::post('files/checkout/{groupId}/file' , [checkOutController::class , 'replaceFile'])->middleware('auth:sanctum');
+Route::controller(ChecksFilesController::class)->group(function () {
+    Route::post('/files/checkIn', 'checkInFiles');
+    Route::post('files/checkout/{groupId}/file', 'replaceFile');
+});
+
+// Check out file
+Route::controller(checkOutController::class)->group(function () {
+    Route::post('files/checkout/{groupId}/file', 'replaceFile');
+});
+

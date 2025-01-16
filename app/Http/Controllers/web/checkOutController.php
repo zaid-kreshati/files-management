@@ -9,34 +9,23 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use App\Services\FileService;
 use App\Traits\JsonResponseTrait;
-
+use App\Http\Requests\CheckOutRequest;
 class checkOutController extends Controller
 {
-    protected CheckOutService $checkOutService;
-    protected FileService $fileService;
+    protected $checkOutService,$fileService;
     use JsonResponseTrait;
+
     public function __construct(CheckOutService $checkOutService,FileService $fileService)
     {
         $this->checkOutService = $checkOutService;
         $this->fileService = $fileService;
     }
-    public function replaceFile(Request $request, int $groupId)
+    public function checkOut(CheckOutRequest $request, int $groupId)
     {
-
-        Log::info('Request data:', $request->all());
-        // $data = $request->validate([
-        //     'file' => 'required|file|mimes:txt|max:2048', // Only text files are allowed
-        // ]);
-
         try {
             foreach ($request->files_names as $fileName) {
-                // Check if the file exists
                 if (Storage::disk('private')->exists("group_files/$fileName")) {
-                    // Get the file contents
-                    Log::info('fileNamex');
-                    Log::info( $fileName);
-                    // Pass the file object to the service
-                    $result = $this->checkOutService->uploadAndReplaceFileInGroup($groupId, $fileName);
+                    $result = $this->checkOutService->checkOutFileInGroup($groupId, $fileName);
                 } else {
                     return $this->errorResponse('File not found', 404);
                 }

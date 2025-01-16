@@ -56,8 +56,12 @@ Route::controller(FileController::class)->prefix('files')->group(function(){
  Route::delete('/{fileId}/delete', 'deleteFile')->name('delete.file');
  // Show file
  Route::get('/{fileId}/open', 'openFile')->name('open.file');
+ // Open backup
+ Route::get('/open-backup/{backupId}', 'openBackup')->name('open.backup');
  // Download file
- Route::get('/download/{fileName}', 'downloadFile')->name('download.file');
+ Route::get('/download/{fileId}', 'downloadFile')->name('download.file');
+ // Restore backup
+ Route::post('/restore-backup', 'restoreBackup')->name('restore.backup');
 
 
 
@@ -83,7 +87,7 @@ Route::post('files/check-out/{groupId}/file' ,  'replaceFile')->middleware('auth
 });
 
 Route::controller(checkOutController::class)->group(function(){
-    Route::post('files/check-out/{groupId}/file' ,  'replaceFile')->middleware('auth:sanctum');
+    Route::post('files/check-out/{groupId}/file' ,  'checkOut')->middleware('auth:sanctum');
 });
 
 

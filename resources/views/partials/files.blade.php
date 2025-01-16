@@ -1,40 +1,18 @@
 <div id="filed" data-group-id="{{ $groupId }}" class="files">
+    @csrf
     <div class="split-screen">
+        <!-- left section -->
         <div class="left">
             <div class="files-header">
-                <button id="uploadFileBtn" class="upload-file-btn" data-bs-toggle="modal"
-                    data-bs-target="#uploadFileModal">Upload New File</button>
+                <button id="uploadFileBtn" class="btnall" data-bs-toggle="modal"
+                    data-bs-target="#uploadFileModal" data-group-id="{{ $groupId }}">Upload New File</button>
 
-                    <button id="checkInFileBtn" class="check-in-file-btn" data-group-id="{{ $groupId }}">
-                        Check In File
-                    </button>
+                <button id="checkInFileBtn" class="btnall" data-group-id="{{ $groupId }}">
+                    Check In File
+                </button>
 
-                    <button id="checkOutFileForm" class="check-out-file-btn"
+                <button id="checkOutFileForm" class="btnall"
                     data-group-id="{{ $groupId }}" >Check Out File</button>
-            </div>
-            <!-- upload file modal -->
-            <div class="modal fade" id="uploadFileModal" tabindex="-1" aria-labelledby="uploadFileModalLabel"
-                aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="uploadFileModalLabel">Upload File</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <form id="uploadFileForm" enctype="multipart/form-data">
-                                <div class="mb-3">
-                                    <label for="file" class="form-label">Choose a .txt file:</label>
-                                    <input type="file" class="form-control" id="file" name="file" required
-                                        accept=".txt">
-                                </div>
-                                <input type="hidden" name="groupId" id="groupId" data-group-id="{{ $groupId }}">
-                                <button type="submit" class="btn btn-primary">Upload</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
             </div>
 
             <!-- files section -->
@@ -87,12 +65,12 @@
             </div>
 
 
-            <div class="container mt-4">
-                <h2 class="text-center mb-4">Pending Files</h2>
+            <div class="container mt-4" style="margin-bottom: 100px;">
+                <h2 class="text-center" style="color: #000;">Pending Files</h2>
                 <div id="pending-file-container">
                     @if(!is_null($pendingFiles)&&count($pendingFiles)>0)
                     <table class="table table-bordered table-striped table-hover">
-                        <thead class="table-dark text-center">
+                        <thead class="table-head text-center">
                             <tr>
                                 <th scope="col">File Name</th>
                                 <th scope="col">Accept</th>
@@ -101,15 +79,20 @@
                         </thead>
                         <tbody>
                             @foreach ($pendingFiles as $pendingFile)
-                                <tr class="text-center align-middle" id="pending-file-{{ $pendingFile->id }}">
+                                <tr class="text-center align-middle" style="background-color: #ffffff;" id="pending-file-{{ $pendingFile->id }}">
                                     <td>{{ $pendingFile->name }}</td>
                                     <td>
-                                        <button id="pending-file-btn" class="btn btn-success btn-sm me-2 accept-btn"
-                                        data-id="{{ $pendingFile->id }}" data-response="approved">Accept</button>
+
+                                        <span id="pending-file-btn" class="true-icon accept-btn"
+                                            data-id="{{ $pendingFile->id }}" data-response="approved">
+                                            &#10003;</span> <!-- Checkmark -->
                                     </td>
                                     <td>
-                                        <button id="pending-file-btn" class="btn btn-danger btn-sm reject-btn"
-                                        data-id="{{ $pendingFile->id }}" data-response="rejected">Reject</button>
+
+                                        <span id="pending-file-btn" class="false-icon reject-btn"
+                                        data-id="{{ $pendingFile->id }}" data-response="rejected">
+                                        &#10007;</span>
+
                                     </td>
                                 </tr>
                             @endforeach
@@ -124,5 +107,10 @@
 
         </div>
     </div>
+
+    @include('Modal.upload_file')
+    @include('Modal.backups_modal')
+
+    <script src="{{ asset('assets/js/files.js') }}"></script>
+
 </div>
-<script src="{{ asset('assets/js/files.js') }}"></script>

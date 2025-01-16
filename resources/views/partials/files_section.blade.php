@@ -1,9 +1,9 @@
-<section class="py-5" id="files-section">
+<section  id="files-section">
     <div class="container px-4 px-lg-5 mt-5">
-        <div class="row gx-4 gx-lg-5 row-cols-2 row-cols-md-3 row-cols-xl-4">
+        <div class="row gx-4 gx-lg-5 row-cols-2 row-cols-md-3 row-cols-xl-4" id="files-container">
             @if ($files)
                 @foreach ($files as $file)
-                    <div class="col mb-5">
+                    <div class="col mb-5" >
                         <div class="card h-100 file-card" id="file-{{ $file->id }}" style="cursor: pointer;"
                             data-file-id="{{ $file->id }}">
                             <div class="dropdown">
@@ -13,23 +13,22 @@
 
                                 <ul class="dropdown-menu" aria-labelledby="dropdown-{{ $file->id }}">
                                     <li>
-                                        <button class="dropdown-item edit-file-btn" data-id="{{ $file->id }}"
-                                            data-name="{{ $file->name }}" data-bs-toggle="modal"
-                                            data-bs-target="#editFileModal">
-                                            Edit File
-                                        </button>
-                                    </li>
-                                    <li>
                                         <button class="dropdown-item delete-file-btn" data-id="{{ $file->id }}">
                                             Delete File
                                         </button>
                                     </li>
                                     <li>
                                         <div>
-                                            <a href="{{ route('download.file', $file->id) }}" class="dropdown-item">
+                                            <a  class="dropdown-item download-file-btn" data-file-id="{{ $file->id }}">
                                                 Download File
                                             </a>
                                         </div>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item back-ups-file-btn" data-bs-toggle="modal"
+                                            data-bs-target="#backupsModal" data-file="{{ json_encode($file) }}">
+                                            Backups
+                                        </a>
                                     </li>
                                 </ul>
                             </div>
@@ -61,3 +60,8 @@
         </div>
     </div>
 </section>
+
+
+
+
+

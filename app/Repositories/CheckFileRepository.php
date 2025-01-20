@@ -5,6 +5,7 @@ namespace App\Repositories;
 use App\Models\File;
 use App\Models\Backup;
 use App\Models\AuditTrail;
+use Exception;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 class CheckFileRepository
@@ -41,10 +42,23 @@ class CheckFileRepository
         return AuditTrail::create($data) ? true : false;
     }
 
+    /**
+     * @throws Exception
+     */
+    public function ValidateCheckinOwner(int $fileID , $fileName): void
+    {
+        $checkedInByUser = $this->findUserByFileId($fileID);
+        $user_id = Auth::id();
+        if($checkedInByUser->id != $user_id){
+            throw new Exception("You cannot check out the file $fileName because you are not the one who checked it in.($checkedInByUser->name)");
+        }
+    }
+
     public function findUserByFileId(int $fileId)
     {
         $checkInUser_id = AuditTrail::where('file_id', $fileId)->orderBy('created_at', 'desc')->first()->user_id;
-        $checkInUser = User::find($checkInUser_id);
-        return $checkInUser;
+        return User::find($checkInUser_id);
     }
+
+
 }

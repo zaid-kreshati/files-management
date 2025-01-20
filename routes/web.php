@@ -27,7 +27,6 @@ Route::controller(AuthController::class)->group(function () {
     Route::post('/logout', 'logout')->name('logout');
     Route::get('/home', 'home')->name('home')->middleware('auth:sanctum');
     Route::post('/loginApi', 'loginApi')->name('loginApi');
-
 });
 
 Route::controller(GroupController::class)->prefix('groups')->name('groups')->group(function () {
@@ -55,7 +54,7 @@ Route::controller(FileController::class)->prefix('files')->group(function(){
  // Delete file
  Route::delete('/{fileId}/delete', 'deleteFile')->name('delete.file');
  // Show file
- Route::get('/{fileId}/open', 'openFile')->name('open.file');
+ Route::get('/{fileId}/open', 'openFile')->name('open.file')->middleware('auth:sanctum');
  // Open backup
  Route::get('/open-backup/{backupId}', 'openBackup')->name('open.backup');
  // Download file
@@ -69,11 +68,11 @@ Route::controller(FileController::class)->prefix('files')->group(function(){
 
 Route::controller(InvitationController::class)->prefix('group')->group(function(){
 
-     // Invitaiton to group
+     // Invitation to group
      Route::post('/inviteuser', 'sendInvitation');
      //Route::get('/{groupId}/invite', 'sendBulkInvitations')->name('inviteAll');
 
-     // Invitaions Response
+     // Invitations Response
 
     Route::post('/invitations/{invitationId}/respond',  'respondToInvitation')->middleware('auth:sanctum');
     Route::get('/invitations',  'getUserInvitations')->middleware('auth:sanctum');

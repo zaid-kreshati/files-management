@@ -94,8 +94,8 @@ class InvitationService
         return true;
     }
 
-    public function getUserInvitations(int $userId): Collection
+    public function getUserInvitations($userId): ?Collection
     {
-        return $this->invitationRepository->getUserInvitations($userId);
+        return $userId === null ? null : $this->invitationRepository->getUserInvitations($userId);
     }
 }

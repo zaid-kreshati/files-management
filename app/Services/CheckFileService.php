@@ -2,10 +2,14 @@
 
 namespace App\Services;
 
+use App\Jobs\CheckInFileJob;
 use App\Repositories\CheckFileRepository;
 use Exception;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+
 class CheckFileService
 {
     protected $checkFileRepository;
@@ -15,82 +19,44 @@ class CheckFileService
         $this->checkFileRepository = $checkFileRepository;
     }
 
-    public function checkInFiles(array $fileIds, string $description = 'description')
+    public function checkInFiles(array $fileIds, string $description = 'description'): array
     {
         DB::beginTransaction();
 
         try {
             foreach ($fileIds as $fileId) {
-                $backupPath = $this->processFileCheckIn($fileId, $description);
+                CheckInFileJob::dispatch($fileId, $description ,  Auth::id());
             }
-
             DB::commit();
 
-            return ['success' => true, 'message' => 'All files checked in successfully.' , 'path'=> $backupPath];
+            return [
+                'success' => true,
+                'message' => 'All files have been queued for check-in.',
+            ];
         } catch (Exception $e) {
+            Log::error($e->getMessage());
             DB::rollBack();
 
             return ['success' => false, 'message' => $e->getMessage()];
         }
     }
 
-    protected function processFileCheckIn(int $fileId, string $description)
+
+    public function validateCheckInRequest(Request $request): array
     {
-        // Lock the file for update to prevent concurrent operations
-        $file = $this->checkFileRepository->lockFileForUpdate($fileId);
-
-        if (!$file) {
-            throw new Exception("File with ID {$fileId} not found.");
-        }
-
-        if ($file->status !== 'free') {
-            throw new Exception("File '{$file->name}' is not free for check-in.");
-        }
-
-        // Backup the file
-        $backupPath = $this->createBackupForFile($file);
-
-        // Update the file status to checked_in
-        $this->checkFileRepository->updateFileStatus($file, 'checked_in');
-
-        // Log changes in the audit trail
-        $this->checkFileRepository->createAuditTrail([
-            'file_id' => $file->id,
-            'user_id' => Auth::id(),
-            'change_type' => 'modified',
-            'description' => $description,
+        return $request->validate([
+            'file_ids' => 'required',
+            'description' => 'string|max:255|nullable',
         ]);
-        return $backupPath;
     }
 
-    protected function createBackupForFile($file): string
+    /**
+     * Normalize file IDs into an array.
+     */
+    public function normalizeFileIds($fileIds): array
     {
-        $sourcePath = storage_path('app/private/' . $file->path);
-
-        // Check if the source file exists
-        if (!file_exists($sourcePath)) {
-            throw new Exception("Source file does not exist: " . $sourcePath);
-        }
-
-        // Define the backup directory
-        $backupDir = storage_path('backups');
-
-        // Check if the backup directory exists; create it if it doesn't
-        if (!file_exists($backupDir)) {
-            mkdir($backupDir, 0755, true); // Create the directory if it doesn't exist
-        }
-
-        // Create the backup path
-        $backupPath = $backupDir . '/' . $file->name . '_' . now()->format('Y-m-d-H-i-s') . '.' . pathinfo($file->path, PATHINFO_EXTENSION);
-
-        // Attempt to copy the file
-        if (!copy($sourcePath, $backupPath)) {
-            throw new Exception("Failed to create backup copy. Source: $sourcePath, Destination: $backupPath");
-        }
-
-        // Record the backup (assuming this method exists)
-        $this->checkFileRepository->createBackup($file->id, $backupPath);
-
-        return $backupPath;
+        return is_array($fileIds) ? $fileIds : [$fileIds];
     }
+
+
 }

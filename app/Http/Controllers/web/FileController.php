@@ -4,15 +4,18 @@ namespace App\Http\Controllers\web;
 
 use App\Services\FileService;
 use App\Services\GroupService;
+use App\Services\OpenDownloadFileService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Exception;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Log;
 use App\Traits\JsonResponseTrait;
 use App\Models\User;
-use Illuminate\Support\Facades\Storage;
 use App\Models\File;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\View\View;
 
 
 class FileController extends Controller
@@ -21,72 +24,56 @@ class FileController extends Controller
 
     protected GroupService $groupService;
     protected FileService $fileService;
+    protected OpenDownloadFileService $openDownloadFileService;
 
-    public function __construct(GroupService $groupService, FileService $fileService)
+    public function __construct(GroupService $groupService, FileService $fileService, OpenDownloadFileService $openDownloadFileService)
     {
         $this->groupService = $groupService;
         $this->fileService = $fileService;
-
+        $this->openDownloadFileService = $openDownloadFileService;
     }
 
-
-    public function uploadFile(Request $request, $groupId)
+    public function uploadFile(Request $request, $groupId): JsonResponse
     {
-        $data = $request->validate([
-            'file' => 'required|file|mimes:txt|max:2048',
-        ]);
-
         try {
-            $userId = Auth::user()->id;
+            $data = $this->fileService->validateUploadRequest($request);
+
             $group = $this->groupService->getGroupById($groupId);
-            $owner_id = $group->owner_id;
 
             $fileName = $data['file']->getClientOriginalName();
-            $path = $data['file']->storeAs('group_files',  $fileName);
+            $path = $this->fileService->storeUploadedFile($data['file'], $fileName);
+
             $file = $this->fileService->uploadFileWithPendingApproval($groupId, $fileName, $path);
-            if ($owner_id == $userId) {
-                $this->fileService->approveFile($file->id, 'approved');
-                $file->approval_status = 'approved';
-                $message = 'File uploaded successfully.';
-            } else {
-                $message = 'File uploaded successfully and waiting for approval.';
-            }
+
+            $message = $this->fileService->processApproval($group, $file, Auth::id());
+
             return $this->successResponse($file, $message);
         } catch (Exception $e) {
-            return $this->errorResponse($e->getMessage(), 'File uploaded failed.');
+            return $this->errorResponse($e->getMessage(), 'File upload failed.');
         }
     }
 
-    public function deleteFile($fileId)
+    public function deleteFile(int $fileId): JsonResponse
     {
-        $file = File::find($fileId);
-        $file->delete();
-        Storage::delete($file->path);
-        return $this->successResponse($file, 'File deleted successfully.');
+        try {
+            $result = $this->fileService->deleteFile($fileId);
+            return $this->successResponse($result, 'File deleted successfully.');
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), 'File deletion failed.');
+        }
     }
 
-
-    public function approveFile(Request $request, $fileId)
+    public function approveFile(Request $request, $fileId): JsonResponse
     {
-        $data = $request->validate([
-            'approval_status' => 'required|in:approved,rejected',
-        ]);
-        Log::info('approve file');
-        Log::info($data);
-
-
         try {
-            $file = $this->fileService->approveFile($fileId, $data['approval_status']);
+            $file = $this->fileService->approveFile($fileId, $request['approval_status']);
             return $this->successResponse($file, 'File approval updated successfully.');
         } catch (Exception $e) {
             return $this->errorResponse($e->getMessage(), 'File approval updated failed.');
         }
     }
 
-
-
-
-    public function getFilesForApproval($groupId)
+    public function getFilesForApproval($groupId): JsonResponse
     {
         try {
             $files = $this->fileService->getPendingFiles($groupId);
@@ -96,87 +83,64 @@ class FileController extends Controller
         }
     }
 
-    public function getApprovedFiles($groupId)
+    /**
+     * @throws Exception
+     */
+    public function getApprovedFiles($groupId): View
     {
-        $userId = Auth::user()->id;
-        $files = $this->fileService->getApprovedFiles($groupId);
-        Log::info($files);
-        $groups = null;
         $group = $this->groupService->getGroupById($groupId);
-        if ($group->owner_id == $userId) {
-            $owner = true;
-            $pendingFiles = $this->fileService->getPendingFiles($groupId);
-        } else {
-            $owner = false;
-            $pendingFiles = null;
-        }
+        $owner = $group->owner_id === Auth::id();
 
+        $files = $this->fileService->getApprovedFiles($groupId);
+
+        // Get pending files only if the user is the owner
+        $pendingFiles = $owner ? $this->fileService->getPendingFiles($groupId) : null;
+
+        // Retrieve users who are not group members
         $memberIds = $group->members->pluck('id'); // Retrieve member IDs
         $users = User::whereNotIn('id', $memberIds)->get();
-                $status = 'files';
-        return view('home', compact('files', 'groups', 'groupId', 'users', 'group', 'status', 'pendingFiles', 'owner'));
+
+        return view('home', [
+            'files' => $files,
+            'groups' => null,
+            'groupId' => $groupId,
+            'users' => $users,
+            'group' => $group,
+            'status' => 'files',
+            'pendingFiles' => $pendingFiles,
+            'owner' => $owner,
+        ]);
     }
 
+
+    // Make New Service : OpenDownloadFileService
     public function openFile($fileId)
     {
-        try {
-            $file = File::find($fileId);
-            if (!$file) {
-                throw new Exception('File not found');
-            }
-            $filePath = storage_path("app/private/" . $file->path); // Ensure full path
-            if (!file_exists($filePath)) {
-                throw new Exception('File does not exist');
-            }
-            if ($file->status == 'free') {
-
-                // File is free, open it in read-only mode
-                $command = "open -a 'Google Chrome' " . escapeshellarg($filePath);
-            } else {
-                $checkedInBy = $file->checked_in_by; // Assuming a 'checked_in_by' field exists in the file model
-                $currentUser = Auth::id();
-                if ($checkedInBy == $currentUser) {
-                    $command = escapeshellcmd("open -a TextEdit $filePath");
-                } else {
-                    $command = null;
-                }
-            }
-
-            shell_exec($command);
+        $response = $this->openDownloadFileService->openFile($fileId);
+        if ($response['success']) {
             return redirect()->back();
-        } catch (Exception $e) {
-            return $this->errorResponse($e->getMessage(), 'File not found');
         }
+        return $this->errorResponse($response['message']);
     }
 
-    public function openBackup(Request $request)
+    public function openBackup(Request $request): void
     {
-        $path = $request->input('path');
-        Log::info($path);
-        $command = escapeshellcmd("open -a TextEdit $path");
-        // Execute the command
-        shell_exec($command);
-        return redirect()->back();
+        $this->openDownloadFileService->openBackup($request);
     }
 
-    public function downloadFile($fileId)
+    public function downloadFile($fileId): \Symfony\Component\HttpFoundation\BinaryFileResponse|array
     {
-        $file = File::find($fileId);
-        if ($file->status == 'free') {
-            return response()->download(storage_path("app/private/" . $file->path), $file->name);
-        } else {
-            return $this->errorResponse('File not found', 404);
-        }
+        return $this->openDownloadFileService->downloadFile($fileId);
     }
 
-    public function restoreBackup(Request $request)
+    public function restoreBackup(string $backupPath, string $filePath): array
     {
-        $backupPath = $request->input('backup_path');
-        $filePath = storage_path('app/private/'.$request->input('file_path'));
-        Log::info($backupPath);
-        Log::info($filePath);
-        copy($backupPath, $filePath);
-        return $this->successResponse('Backup restored successfully');
+        return $this->openDownloadFileService->restoreBackup($backupPath, $filePath);
     }
+
+    public function export($fileId, Request $request)
+    {
+        return $this->openDownloadFileService->export($fileId, $request);
+    }
+
 }
-

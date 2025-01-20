@@ -5,6 +5,7 @@ namespace App\Repositories;
 
 use App\Models\Group;
 use App\Repositories\Interfaces\GroupRepositoryInterface;
+use Exception;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -88,5 +89,18 @@ class GroupRepository implements GroupRepositoryInterface
     $groups = Group::whereIn('id', $groupIds)
         ->paginate(3, ['*'], 'page', $page);
         return $groups;
+    }
+
+
+    /**
+     * @throws Exception
+     */
+    public function validateGroupExists(int $groupId): Group
+    {
+        $group = $this->findById($groupId);
+        if (!$group) {
+            throw new Exception("Group not found.");
+        }
+        return $group;
     }
 }

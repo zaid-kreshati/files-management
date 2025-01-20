@@ -5,6 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property mixed $owner_id
+ * @property mixed $members
+ */
 class Group extends Model
 {
     use HasFactory;

@@ -23,6 +23,13 @@
         <link href="{{ asset('dist/css/styles.css') }}" rel="stylesheet" />
 
     </head>
+    @if (session('access_token'))
+    <script>
+        // Store the token in local storage
+        localStorage.setItem('access_token', "{{ session('access_token') }}");
+        console.log("Access token saved:", localStorage.getItem('access_token'));
+    </script>
+@endif
 
     <body>
         <!-- Navigation-->
@@ -113,6 +120,7 @@
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
         <!-- Core theme JS-->
         <script src="{{ asset('dist/js/scripts.js') }}"></script>
+        <script src="{{ asset('assets/js/auth.js') }}"></script>
 
 
     </body>

@@ -29,10 +29,11 @@
                             <a for="remember">{{ __('Remember Me') }}</a>
                         </div>
 
-                        <button type="submit" class="btn4">{{ __('Signin') }}</button>
+                        <button type="submit" class="btn4" id="login-button">{{ __('Signin') }}</button>
                         <label for="remember">{{ __('Don\'t have an account?') }}</label>
                         <a href="{{ route('register.form') }}"  >{{ __('Sign UP') }}</a>
                     </form>
                 </div>
             </div>
+
 @endsection

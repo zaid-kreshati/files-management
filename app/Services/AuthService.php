@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use App\Repositories\AuthRepository;
+use App\Models\RefreshToken;
+
 class AuthService
 {
     protected $authRepository;
@@ -33,8 +35,10 @@ class AuthService
     {
         if (Auth::attempt(['email' => $data['email'], 'password' => $data['password']])) {
             $user = Auth::user();
-            $token = $user->createToken('API Token')->plainTextToken;
-            return ['user' => $user, 'token' => $token];
+            $accesstoken = $user->createToken('API Token')->plainTextToken;
+            $refreshToken = $user->createToken('refresh-token')->plainTextToken;
+            $this->authRepository->createRefreshToken($user->id, $refreshToken);
+            return [ 'accessToken' => $accesstoken,'refreshToken'=>$refreshToken];
         }
 
         return null;
@@ -44,5 +48,10 @@ class AuthService
     {
         Auth::user()->tokens()->delete();
         return true;
+    }
+
+    public function refreshToken($userId, $refreshToken)
+    {
+        $this->authRepository->refreshToken($userId, $refreshToken);
     }
 }

@@ -90,17 +90,17 @@ class GroupController extends Controller
             return $this->successResponse(['success' => true]);
         }else{
             $message='You are not the owner of this group';
-            return $this->errorResponse($message,403);
+            return $this->errorResponse($message);
         }
     }
 
     public function searchGroups(Request $request)
     {
-        $userId=Auth::user()->id;
         $search = $request->input('search');
         $groups = $this->groupService->searchGroups($search);
-        $invitationRequests = $this->invitationService->getUserInvitations($userId);
-        $html = view('partials.groups', ['groups' => $groups,'invitationRequests'=>$invitationRequests])->render();
+        Log::info("groups");
+        Log::info($groups);
+        $html = view('partials.group_section', ['groups' => $groups])->render();
         return $this->successResponse($html);
     }
 
@@ -132,7 +132,8 @@ class GroupController extends Controller
         if($group->owner_id==$userId){
             return $this->successResponse(['success' => true]);
         }else{
-            return $this->errorResponse('You are not the owner of this group2',403);
+            $message='You are not the owner of this group';
+            return $this->errorResponse($message,403);
         }
     }
 }

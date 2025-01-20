@@ -13,7 +13,8 @@ use App\Models\User;
 use Illuminate\Support\Facades\Storage;
 use App\Models\File;
 use Illuminate\Support\Facades\Auth;
-
+use Barryvdh\DomPDF\Facade\Pdf;
+use App\Models\AuditTrail;
 
 class FileController extends Controller
 {
@@ -59,10 +60,19 @@ class FileController extends Controller
 
     public function deleteFile($fileId)
     {
-        $file = File::find($fileId);
-        $file->delete();
-        Storage::delete($file->path);
-        return $this->successResponse($file, 'File deleted successfully.');
+        try {
+            $userId=Auth::user()->id;
+            $file = File::find($fileId);
+            if($file->owner_id==$userId){
+                $file->delete();
+                Storage::delete($file->path);
+                return $this->successResponse($file, 'File deleted successfully.');
+            }else{
+                throw new Exception('You are not the owner of this file');
+            }
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), 403);
+        }
     }
 
 
@@ -99,6 +109,8 @@ class FileController extends Controller
     public function getApprovedFiles($groupId)
     {
         $userId = Auth::user()->id;
+        $user=Auth::user();
+        $name=$user->name;
         $files = $this->fileService->getApprovedFiles($groupId);
         Log::info($files);
         $groups = null;
@@ -114,7 +126,7 @@ class FileController extends Controller
         $memberIds = $group->members->pluck('id'); // Retrieve member IDs
         $users = User::whereNotIn('id', $memberIds)->get();
                 $status = 'files';
-        return view('home', compact('files', 'groups', 'groupId', 'users', 'group', 'status', 'pendingFiles', 'owner'));
+        return view('home', compact('files', 'groups', 'groupId', 'users', 'group', 'status', 'pendingFiles', 'owner','name'));
     }
 
     public function openFile($fileId)
@@ -162,6 +174,7 @@ class FileController extends Controller
     public function downloadFile($fileId)
     {
         $file = File::find($fileId);
+        Log::info($file);
         if ($file->status == 'free') {
             return response()->download(storage_path("app/private/" . $file->path), $file->name);
         } else {
@@ -178,5 +191,25 @@ class FileController extends Controller
         copy($backupPath, $filePath);
         return $this->successResponse('Backup restored successfully');
     }
+
+    public function export($fileId, Request $request)
+    {
+        // Retrieve audit trails related to the file
+        $audit = AuditTrail::where('file_id', $fileId)->get();
+
+     
+
+        $file_name = $request->input('file_name');
+        // Load a view and pass the audit data
+        $pdf = Pdf::loadView('pdf_report', ['audit' => $audit, 'file_name' => $file_name]);
+
+        // Generate a meaningful file name
+        $fileName = 'audit_report_file_' . $fileId . '.pdf';
+
+        // Download the PDF
+        return $pdf->download($fileName);
+    }
+
+
 }
 

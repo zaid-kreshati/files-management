@@ -34,9 +34,14 @@ function createFileCard(file) {
 
                                       <li>
                                         <div>
-                                            <a  class="dropdown-item download-file-btn" data-file-id="${file.id}">
-                                                Download File
-                                            </a>
+                                        ${file.status === 'free' ? `
+                                            <a href="/files/download/${file.id}" class="dropdown-item download-file-success" data-file-id="${file.id}">
+                                              Download File
+                                            </a>` : `
+                                            <button class="dropdown-item download-file-error" data-file-id="${file.id}">
+                                              Download File
+                                            </button>`}
+
                                         </div>
                                     </li>
                                     <li>
@@ -44,6 +49,16 @@ function createFileCard(file) {
                                             data-bs-target="#backupsModal" data-file="${file}">
                                             Backups
                                         </a>
+                                    </li>
+                                    <li>
+                                    <form action="/files/audit/export/${file.id}" method="post">
+                                            <input type="hidden" name="_token" value="${getCsrfToken()}">
+                                            <input type="hidden" name="file_id" value="${file.id}">
+                                            <input type="hidden" name="file_name" value="${file.name}">
+                                            <button class="dropdown-item export-file-btn" type="submit">
+                                                Export audit as PDF
+                                            </button>
+                                        </form>
                                     </li>
 
 
@@ -227,12 +242,12 @@ $(document).on("click", ".delete-file-btn", function () {
                         });
                     }
                 },
-                error: function (xhr, status, error) {
-                    console.error("AJAX Error:", { status, error, xhr });
+                error: function (error) {
+                    console.error("AJAX Error:", error);
                     Swal.fire({
                         width: "70%",
                         title: "Error",
-                        text: "Something went wrong. Please try again.",
+                        text: error.responseJSON.message,
                         icon: "error",
                     });
                 },
@@ -254,7 +269,6 @@ function handleFileClick(fileId) {
         method: "GET",
         success: function (response) {
             console.log(response);
-            window.location.href = `/files/${fileId}/open`;
         },
         error: function (error) {
             console.error(error);
@@ -284,10 +298,20 @@ $(document).on("click", "#pending-file-btn", function () {
             if (response.success) {
                 console.log(response);
                 $(`#pending-file-${fileId}`).remove();
+
+                if(response.data.pendingFiles==null){
+                    $("#pending-file-container").html('');
+                }
+
+
                 if (approvalStatus === "approved") {
-                    $(`#file-${fileId}`).append(
-                        createFileCard(response.data.file)
-                    );
+
+                    approvedFile = createFileCard(response.data);
+                    $("#files-container").append(approvedFile);
+
+
+
+
                 }
                 Swal.fire({
                     width: "70%",
@@ -415,30 +439,21 @@ $("#checkOutFileForm").on("click", function (event) {
     });
 });
 
-$(document).on("click", ".download-file-btn", function () {
-    const fileId = $(this).data("file-id");
-    console.log("File ID:", fileId);
-    $.ajax({
-        url: `/files/download/${fileId}`,
-        method: "GET",
-        success: function (response) {
-            console.log(response);
-            Swal.fire({
-                width: "70%",
-                title: "Success",
-                text: "The file is downloading",
-                icon: "success",
-            });
-        },
-        error: function (error) {
-            console.error(error);
-            Swal.fire({
-                width: "70%",
-                title: "Error",
-                text: "the file is not free",
-                icon: "error",
-            });
-        },
+$(document).on("click", ".download-file-error", function () {
+    Swal.fire({
+        width: "70%",
+        title: "Error",
+        text: "the file is not free",
+        icon: "error",
+    });
+});
+
+$(document).on("click", ".download-file-success", function () {
+    Swal.fire({
+        width: "70%",
+        title: "Success",
+        text: "File downloaded successfully",
+        icon: "success",
     });
 });
 

@@ -8,7 +8,7 @@ use App\Models\Backup;
 use Illuminate\Support\Facades\Storage;
 use Exception;
 use App\Models\Checkout;
-
+use Illuminate\Support\Facades\Auth;
 class CheckOutRepository
 {
 
@@ -62,13 +62,21 @@ class CheckOutRepository
         return File::where('id', $fileId)->lockForUpdate()->first();
     }
 
-    public function checkOutFile(int $fileId, int $userId, string $action): bool
+    public function checkOutFile(int $fileId, string $action): bool
     {
+        $userId = Auth::id();
+        $actionTime = now()->format('Y-m-d:H-m');
+
         return Checkout::create([
             'file_id' => $fileId,
             'user_id' => $userId,
             'action' => $action,
-            'action_time' => now()->format('Y-m-d:H-m'),
+            'action_time' => $actionTime,
         ]) ? true : false;
+    }
+
+    public function getLastVersion(int $fileId)
+    {
+        return Backup::where('file_id', $fileId)->orderBy('created_at', 'desc')->first();
     }
 }

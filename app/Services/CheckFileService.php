@@ -57,7 +57,7 @@ class CheckFileService
         $this->checkFileRepository->createAuditTrail([
             'file_id' => $file->id,
             'user_id' => Auth::id(),
-            'change_type' => 'modified',
+            'change_type' => 'check_in',
             'description' => $description,
         ]);
         return $backupPath;
@@ -81,7 +81,7 @@ class CheckFileService
         }
 
         // Create the backup path
-        $backupPath = $backupDir . '/' . $file->name . '_' . now()->format('Y-m-d') . '.' . pathinfo($file->path, PATHINFO_EXTENSION);
+        $backupPath = $backupDir . '/' . $file->name . '_' . now()->format('Y-m-d-H-i-s') . '.' . pathinfo($file->path, PATHINFO_EXTENSION);
 
         // Attempt to copy the file
         if (!copy($sourcePath, $backupPath)) {

@@ -5,7 +5,7 @@ namespace App\Repositories;
 use App\Models\Invitation;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
-class InvitationRepository 
+class InvitationRepository
 {
     protected $invitation;
 
@@ -36,7 +36,7 @@ class InvitationRepository
     {
         return $this->invitation->find($invitationId);
     }
-    
+
     public function updateInvitationStatus($invitation, string $status): bool
     {
         $invitation->status = $status;
@@ -45,6 +45,6 @@ class InvitationRepository
 
     public function getUserInvitations(int $userId): Collection
     {
-        return $this->invitation->where('receiver_id', $userId)->get();
+        return $this->invitation->where('receiver_id', $userId)->where('status', 'pending')->get();
     }
 }

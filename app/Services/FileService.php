@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Repositories\FileRepository;
 use App\Repositories\GroupRepository;
 use Exception;
-
+use App\Models\File;
 class FileService
 {
 
@@ -45,7 +45,7 @@ class FileService
     }
 
 
-    public function approveFile(int $fileId, string $approvalStatus): bool
+    public function approveFile(int $fileId, string $approvalStatus): File
     {
         $file = $this->fileRepository->find($fileId);
 
@@ -59,10 +59,11 @@ class FileService
             throw new Exception("Only the group owner can approve or reject files.");
         }
 
-        return $this->fileRepository->updateApprovalStatus($fileId, $approvalStatus);
+        $reaponse=$this->fileRepository->updateApprovalStatus($fileId, $approvalStatus);
+        return $file;
     }
 
-    public function getFilesForApproval(int $groupId)
+    public function getPendingFiles(int $groupId)
     {
         $group = $this->groupRepository->findById($groupId);
 
@@ -88,4 +89,8 @@ class FileService
 
         return $this->fileRepository->getApprovedFilesByGroupId($groupId);
     }
+
+
+
+
 }

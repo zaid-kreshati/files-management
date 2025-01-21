@@ -6,7 +6,7 @@ use App\Models\File;
 use App\Models\Backup;
 use App\Models\AuditTrail;
 use Illuminate\Support\Facades\Auth;
-
+use App\Models\User;
 class CheckFileRepository
 {
     public function findById(int $id): ?File
@@ -39,5 +39,12 @@ class CheckFileRepository
     public function createAuditTrail(array $data): bool
     {
         return AuditTrail::create($data) ? true : false;
+    }
+
+    public function findUserByFileId(int $fileId)
+    {
+        $checkInUser_id = AuditTrail::where('file_id', $fileId)->orderBy('created_at', 'desc')->first()->user_id;
+        $checkInUser = User::find($checkInUser_id);
+        return $checkInUser;
     }
 }

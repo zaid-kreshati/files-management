@@ -4,7 +4,7 @@
 namespace App\Repositories;
 
 use App\Models\User;
-
+use App\Models\RefreshToken;
 
 class AuthRepository
 {
@@ -29,6 +29,15 @@ class AuthRepository
     {
         // Revoke all tokens for the user
         $user->tokens()->delete();
+    }
+
+    public function createRefreshToken($userId, $refreshToken)
+    {
+        return RefreshToken::create([
+            'user_id' => $userId,
+            'token' => $refreshToken,
+            'expires_at' => now()->addDays(7)
+        ]);
     }
 
 

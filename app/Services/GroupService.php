@@ -6,6 +6,7 @@ use App\Repositories\Interfaces\GroupRepositoryInterface;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Group;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Exception;
 
 class GroupService
@@ -19,8 +20,11 @@ class GroupService
 
     public function createGroup(array $data): Group
     {
-        $data['owner_id'] = Auth::id();
-        return $this->groupRepository->create($data);
+        $userId = Auth::user()->id;
+        $data['owner_id'] = $userId;
+        $group = $this->groupRepository->create($data);
+        $this->groupRepository->addMember($group->id, $userId);
+        return $group;
     }
 
     public function deleteGroup(int $id): bool
@@ -37,18 +41,13 @@ class GroupService
         return $this->groupRepository->delete($id);
     }
 
-    public function getGroupById(int $id): ?Group
-    {
-        return $this->groupRepository->findById($id);
-    }
-
     public function getAllGroupsByUser(int $userId): array
     {
         return $this->groupRepository->getAllByUserId($userId);
     }
 
 
-    public function getGroupMembers(int $groupId) 
+    public function getGroupMembers(int $groupId)
     {
 
         $group = $this->groupRepository->findById($groupId);
@@ -60,4 +59,30 @@ class GroupService
             return $member->name;
         });
     }
+
+    public function getAll(): Collection
+    {
+        return $this->groupRepository->getAll();
+    }
+
+    public function updateGroup(int $id, array $data): void
+    {
+        $this->groupRepository->update($id, $data);
+    }
+
+    public function searchGroups(string $search)
+    {
+        return $this->groupRepository->search($search);
+    }
+
+    public function getAllWithPagination(int $page): LengthAwarePaginator
+    {
+        return $this->groupRepository->getAllWithPagination($page);
+    }
+
+    public function getGroupById(int $id): Group
+    {
+        return $this->groupRepository->findById($id);
+    }
+    
 }

@@ -5,6 +5,22 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+
+/**
+ * The suggestion is to explicitly document the id property in the File class using a @ property 'PHPDoc annotation.
+ * This helps tools like IDEs and static analyzers understand that $id exists, even if it's not defined directly in the class.
+ */
+
+
+/**
+ * @property mixed $id
+ * @property mixed $status
+ * @property mixed $name
+ * @property mixed $path
+ * @property mixed|string $approval_status
+ * @method static find($fileId)
+ */
+
 class File extends Model
 {
     use HasFactory;

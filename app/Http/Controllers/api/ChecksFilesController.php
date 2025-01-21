@@ -30,7 +30,7 @@ class ChecksFilesController extends Controller
         ? [$data['file_ids']]
         : $data['file_ids'];
 
-        //dd($fileIds);
+
         $result = $this->checkFileService->checkInFiles($fileIds, $data['description'] = 'description');
 
         if ($result['success']) {

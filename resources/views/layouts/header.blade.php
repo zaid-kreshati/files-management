@@ -38,8 +38,8 @@
             <a href="{{ route('home') }}">
                 <img src="{{ asset('icons/home-icon.webp') }}" alt="{{ __('Home') }}" class="icon3">
             </a>
-            <a href="{{ route('logout') }}" id="logout-btn">
-                {{ __('Logout2') }}
+            <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                {{ __('Logout') }}
             </a>
             <form id="logout-form" action="{{ route('logout') }}" method="POST" >
                 @csrf
@@ -51,6 +51,5 @@
     @yield('content')
 
     <script src="{{ asset('assets/js/app.js') }}"></script>
-    <script src="{{ asset('assets/js/auth.js') }}"></script>
 </body>
 </html>

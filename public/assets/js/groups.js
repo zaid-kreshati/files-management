@@ -15,7 +15,7 @@ function createGroupCard(group) {
                         aria-expanded="false" data-id="${group.id}" data-name="${group.name}">
                     <ul class="dropdown-menu" aria-labelledby="dropdown-${group.id}">
                         <li>
-                            <button class="dropdown-item edit-group-btn" data-id="${group.id}" data-name="${group.name}">
+                            <button class="dropdown-item edit-group-btn" data-id="${group.id}" data-name="${group.name}" data-bs-toggle="modal" data-bs-target="#editGroupModal">
                                 Edit Group
                             </button>
                         </li>
@@ -59,6 +59,7 @@ $('#createGroupForm').on('submit', function (e) {
             if (response.success) {
                 Swal.fire({
                     width: '70%',
+                    html: '<p style="font-size: 1em;">Resize your screen to see the changes!</p>',
                     title: 'Success',
                     text: 'Group created successfully',
                     icon: 'success'
@@ -72,6 +73,7 @@ $('#createGroupForm').on('submit', function (e) {
             } else {
                 Swal.fire({
                     width: '70%',
+                    html: '<p style="font-size: 1em;">Resize your screen to see the changes!</p>',
                     title: 'Error',
                     text: 'Failed to create group',
                     icon: 'error',
@@ -82,6 +84,7 @@ $('#createGroupForm').on('submit', function (e) {
             console.error('AJAX Error:', { status, error, xhr });
             Swal.fire({
                 width: '70%',
+                html: '<p style="font-size: 1em;">Resize your screen to see the changes!</p>',
                 title: 'Error',
                 text: 'Something went wrong. Please try again.',
                 icon: 'error',
@@ -94,37 +97,42 @@ $('#createGroupForm').on('submit', function (e) {
 });
 
 $(document).on('click', '.edit-group-btn', function () {
-
     const groupId = $(this).data('id');
     const groupName = $(this).data('name');
 
-    // Populate the modal form
-    $('#editGroupForm').data('id', groupId);
-    $('#editGroupName').val(groupName);
+        $('#editGroupForm').data('id', groupId);
+        $('#editGroupName').val(groupName);
+        $.ajax({
+            url: `/groups/check-owner/${groupId}`,
+            method: 'GET',
+            success: function (response) {
+                if (response.success) {
+                    $('#editGroupModal').modal('show');
+                }
+                else{
+                    $('#editGroupModal').modal('hide');
+                    Swal.fire({
+                        width: '70%',
+                        html: '<p style="font-size: 1em;">Resize your screen to see the changes!</p>',
+                        title: 'Error',
+                        text: 'You are not the owner of this group',
+                        icon: 'error',
+                    });
+                }
+            },
+            error: function (error) {
+                console.log(error);
+                Swal.fire({
+                    width: '70%',
+                    html: '<p style="font-size: 1em;">Resize your screen to see the changes!</p>',
+                    title: 'Error',
+                    text: error.responseJSON.message,
+                    icon: 'error',
+                });
+            },
+        })
 
-
-    $.ajax({
-        url: `/groups/check-owner/${groupId}`,
-        method: 'GET',
-        success: function (response) {
-            console.log(response);
-            // Show the modal
-            $('#editGroupModal').modal('show');
-        },
-        error: function (error) {
-            console.log(error);
-
-            // Show error with SweetAlert
-            Swal.fire({
-                width: '70%',
-                title: 'Forbidden',
-                text: error.responseJSON?.message || 'An unexpected error occurred.',
-                icon: 'error',
-            });
-        }
     });
-});
-
 
 $('#editGroupForm').on('submit', function (e) {
     e.preventDefault();
@@ -160,6 +168,7 @@ $('#editGroupForm').on('submit', function (e) {
 
             Swal.fire({
                 width: '70%',
+                html: '<p style="font-size: 1em;">Resize your screen to see the changes!</p>',
                 title: 'Success',
                 text: 'Group updated successfully!',
                 icon: 'success'
@@ -170,6 +179,7 @@ $('#editGroupForm').on('submit', function (e) {
 
             Swal.fire({
                 width: '70%',
+                html: '<p style="font-size: 1em;">Resize your screen to see the changes!</p>',
                 title: 'Error',
                 text: 'Something went wrong. Please try again.',
                 icon: 'error',
@@ -208,6 +218,7 @@ $(document).on('click', '.delete-group-btn', function () {
 
                             Swal.fire({
                                 width: '70%',
+                                html: '<p style="font-size: 1em;">Resize your screen to see the changes!</p>',
                                 title: 'Success',
                                 text: 'Group has been deleted.',
                                 icon: 'success'
@@ -215,6 +226,7 @@ $(document).on('click', '.delete-group-btn', function () {
                         } else {
                             Swal.fire({
                                 width: '70%',
+                                html: '<p style="font-size: 1em;">Resize your screen to see the changes!</p>',
                                 title: 'Error',
                                 text: 'Failed to delete group.',
                                 icon: 'error'
@@ -225,6 +237,7 @@ $(document).on('click', '.delete-group-btn', function () {
                         console.log(error);
                         Swal.fire({
                             width: '70%',
+                            html: '<p style="font-size: 1em;">Resize your screen to see the changes!</p>',
                             title: 'Error',
                             text: error.responseJSON.message,
                             icon: 'error',
@@ -283,7 +296,7 @@ function loadMoreGroups() {
 // Search functionality
 (function () {
     const searchBox = $('#searchBox');
-    const groupSection = $('#group-section');
+    const groupContainer = $('#groupd');
 
     // Debounce function to limit the frequency of the search
     function debounce(func, wait) {
@@ -418,6 +431,7 @@ $(document).on('click', '#invitation-response-btn', function () {
 
                     Swal.fire({
                         width: '70%',
+                        html: '<p style="font-size: 1em;">Resize your screen to see the changes!</p>',
                         title: 'Success',
                         text: response.message,
                         icon: 'success'
@@ -425,6 +439,7 @@ $(document).on('click', '#invitation-response-btn', function () {
                 } else {
                     Swal.fire({
                         width: '70%',
+                        html: '<p style="font-size: 1em;">Resize your screen to see the changes!</p>',
                         title: 'Rejected',
                         text: response.message,
                         icon: 'error'

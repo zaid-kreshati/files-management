@@ -11,19 +11,16 @@ use App\Http\Controllers\Controller;
 use App\Traits\JsonResponseTrait;
 use App\Models\Invitation;
 use Illuminate\Support\Facades\Log;
-use App\Services\FileService;
 
 class InvitationController extends Controller
 {
     protected $invitationService;
     use JsonResponseTrait;
-    protected $fileService;
 
 
-    public function __construct(InvitationService $invitationService,FileService $fileService)
+    public function __construct(InvitationService $invitationService)
     {
         $this->invitationService = $invitationService;
-        $this->fileService = $fileService;
     }
 
     // Send invitation to a specific user

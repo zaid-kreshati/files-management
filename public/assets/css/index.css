@@ -154,14 +154,14 @@
 }
 
 .split-screen .left {
-    flex: 75%;
+    flex: 3.5;
     background-color: #ffffff;
     overflow-y: auto;
     padding: 20px;
 }
 
 .split-screen .right {
-    flex: 25%;
+    flex: 1;
     background-color: #cfcfcf8c;
     overflow-y: auto;
     border-left: 1px solid #ddd;

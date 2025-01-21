@@ -18,32 +18,17 @@
                                         </button>
                                     </li>
                                     <li>
-                                        @if ($file->status == 'free')
-                                           <a href="{{ route('download.file', $file->id) }}"
-                                            class="dropdown-item download-file-success" data-file-id="{{ $file->id }}">
+                                        <div>
+                                            <a  class="dropdown-item download-file-btn" data-file-id="{{ $file->id }}">
                                                 Download File
                                             </a>
-                                        @else
-                                            <button class="dropdown-item download-file-error" data-file-id="{{ $file->id }}">
-                                                Download File
-                                            </button>
-                                        @endif
+                                        </div>
                                     </li>
                                     <li>
                                         <a class="dropdown-item back-ups-file-btn" data-bs-toggle="modal"
                                             data-bs-target="#backupsModal" data-file="{{ json_encode($file) }}">
                                             Backups
                                         </a>
-                                    </li>
-                                    <li>
-                                        <form action="{{ route('audit.export', $file->id) }}" method="post">
-                                            @csrf
-                                            <input type="hidden" name="file_id" value="{{ $file->id }}">
-                                            <input type="hidden" name="file_name" value="{{ $file->name }}">
-                                            <button class="dropdown-item export-file-btn" type="submit">
-                                                Export audit as PDF
-                                            </button>
-                                        </form>
                                     </li>
                                 </ul>
                             </div>

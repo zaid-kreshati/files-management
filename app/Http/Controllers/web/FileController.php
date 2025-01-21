@@ -60,19 +60,10 @@ class FileController extends Controller
 
     public function deleteFile($fileId)
     {
-        try {
-            $userId=Auth::user()->id;
-            $file = File::find($fileId);
-            if($file->owner_id==$userId){
-                $file->delete();
-                Storage::delete($file->path);
-                return $this->successResponse($file, 'File deleted successfully.');
-            }else{
-                throw new Exception('You are not the owner of this file');
-            }
-        } catch (Exception $e) {
-            return $this->errorResponse($e->getMessage(), 403);
-        }
+        $file = File::find($fileId);
+        $file->delete();
+        Storage::delete($file->path);
+        return $this->successResponse($file, 'File deleted successfully.');
     }
 
 
@@ -109,8 +100,6 @@ class FileController extends Controller
     public function getApprovedFiles($groupId)
     {
         $userId = Auth::user()->id;
-        $user=Auth::user();
-        $name=$user->name;
         $files = $this->fileService->getApprovedFiles($groupId);
         Log::info($files);
         $groups = null;
@@ -126,7 +115,7 @@ class FileController extends Controller
         $memberIds = $group->members->pluck('id'); // Retrieve member IDs
         $users = User::whereNotIn('id', $memberIds)->get();
                 $status = 'files';
-        return view('home', compact('files', 'groups', 'groupId', 'users', 'group', 'status', 'pendingFiles', 'owner','name'));
+        return view('home', compact('files', 'groups', 'groupId', 'users', 'group', 'status', 'pendingFiles', 'owner'));
     }
 
     public function openFile($fileId)
@@ -174,7 +163,6 @@ class FileController extends Controller
     public function downloadFile($fileId)
     {
         $file = File::find($fileId);
-        Log::info($file);
         if ($file->status == 'free') {
             return response()->download(storage_path("app/private/" . $file->path), $file->name);
         } else {

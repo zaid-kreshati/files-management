@@ -32,19 +32,27 @@
             </div>
 
             <!-- Member List -->
+            @php
+                $owner=true;
+                $user=Auth::user();
+                $name=$user->name;
+            @endphp
             {{ $name }}
             <div class="member-list bg-light p-3" style="width: 300px; " id="member-list">
                 <h5 class="text-center">Group Members</h5>
                 <ul class="list-group">
-                    @foreach ($group->members as $index => $member)
+                    @foreach ($group->members as $member)
                     <li class="list-group-item d-flex justify-content-between align-items-center">
                         <!-- Member Name on the Left -->
                         <span>{{ $member->name }}</span>
 
                         <!-- Membership on the Right -->
                         <span class="badge bg-secondary">
-                            @if($index === 0)
+                            @if($owner)
                                 Owner
+                                @php
+                                    $owner = false;
+                                @endphp
                             @else
                                 Member
                             @endif
@@ -57,12 +65,9 @@
             </div>
 
 
-
-            <!-- Pending Files -->
-            @if ($owner)
-            <div class="container mt-4" style="margin-bottom: 100px;" id="pending-file-container">
+            <div class="container mt-4" style="margin-bottom: 100px;">
                 <h2 class="text-center" style="color: #000;">Pending Files</h2>
-                <div >
+                <div id="pending-file-container">
                     @if(!is_null($pendingFiles)&&count($pendingFiles)>0)
                     <table class="table table-bordered table-striped table-hover">
                         <thead class="table-head text-center">
@@ -78,13 +83,13 @@
                                     <td>{{ $pendingFile->name }}</td>
                                     <td>
 
-                                        <span id="pending-file-btn" class="true-icon accept-btn" style="cursor: pointer;"
+                                        <span id="pending-file-btn" class="true-icon accept-btn"
                                             data-id="{{ $pendingFile->id }}" data-response="approved">
                                             &#10003;</span> <!-- Checkmark -->
                                     </td>
                                     <td>
 
-                                        <span id="pending-file-btn" class="false-icon reject-btn" style="cursor: pointer;"
+                                        <span id="pending-file-btn" class="false-icon reject-btn"
                                         data-id="{{ $pendingFile->id }}" data-response="rejected">
                                         &#10007;</span>
 
@@ -94,13 +99,10 @@
                         </tbody>
                     </table>
                     @else
-                    <h4 style="color: black; background-color: #ffffff">No pending files</h4>
+                    <p>No pending files</p>
                     @endif
                 </div>
             </div>
-            @else
-            <h1 style="color: black; background-color: #ffffff">{{ $owner }}</h1>
-            @endif
 
 
         </div>

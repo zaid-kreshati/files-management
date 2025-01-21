@@ -59,7 +59,7 @@ class CheckFileService
         $this->checkFileRepository->createAuditTrail([
             'file_id' => $file->id,
             'user_id' => Auth::id(),
-            'change_type' => 'check_in',
+            'change_type' => 'modified',
             'description' => $description,
         ]);
         return $backupPath;

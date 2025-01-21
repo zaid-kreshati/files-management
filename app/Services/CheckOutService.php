@@ -52,34 +52,40 @@ class CheckOutService
             throw new Exception("You cannot check out the file $fileName because you are not the one who checked it in.($checkInUser->name)");
         }
 
+
         // Register checkouts
         $this->checkOutRepository->checkOutFile($existingFile->id  , 'checkout');
         $path = Storage::disk('private')->path("group_files/$fileName");
 
+        Log::info('path');
+        Log::info($path);
 
         // Read contents of the uploaded file
         $uploadedFileContent = file_get_contents($path);
 
+        Log::info('uploadedFileContent');
+        Log::info($uploadedFileContent);
 
         // Read contents of the existing file
-        //$existingFileContent = Storage::get($existingFile->path);
-        $lastVersion = $this->checkOutRepository->getLastVersion($existingFile->id);
-        $existingFileContent = file_get_contents($lastVersion->backup_path);
-
+        $existingFileContent = Storage::get($existingFile->path);
 
         // Compare the files
         $differences = $this->compareFiles11($existingFileContent, $uploadedFileContent);
 
         $backupPath = storage_path('backups/'.$fileName.'_'.now()->format('Y-m-d-H-i-s').'.'.pathinfo($existingFile->path, PATHINFO_EXTENSION));
+        Log::info('backupPath');
+        Log::info($backupPath);
         $oldPath = storage_path('app/private/'.$existingFile->path);
-
-        //backup the file
-         //copy($oldPath, $backupPath);
+        Log::info('oldPath');
+        Log::info($oldPath);
+         copy($oldPath, $backupPath);
         $this->chekFileRepository->createBackup(
             $existingFile->id,
             $backupPath,
         );
 
+        // Replace the file (overwrite the existing path)
+        // $newPath = $uploadedFile->storeAs('files', $fileName);
         $existingFile->update([ 'status' => 'free']);
 
 
@@ -87,7 +93,7 @@ class CheckOutService
         $this->chekFileRepository->createAuditTrail([
             'file_id' => $existingFile->id,
             'user_id' => Auth::id(),
-            'change_type' => 'check_out',
+            'change_type' => 'modified',
             'description' => "File replaced by user: " . Auth::user()->name . " \n " . $differences,
         ]);
         DB::commit();
@@ -108,11 +114,6 @@ class CheckOutService
 
     private function compareFiles11(string $existingContent, string $uploadedContent): string
     {
-        Log::info('existingContent');
-        Log::info($existingContent);
-        Log::info('uploadedContent');
-        Log::info($uploadedContent);
-
         $differ = new Differ(new UnifiedDiffOutputBuilder);
 
         // Generate the diff as a string

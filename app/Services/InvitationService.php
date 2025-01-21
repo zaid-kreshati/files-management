@@ -40,7 +40,11 @@ class InvitationService
         if (!$group) {
             throw new Exception("Group not found");
         }
-      
+
+        if ($group->owner_id !== Auth::id()) {
+            throw new Exception("You are not the owner of this group");
+        }
+
         return $this->invitationRepository->sendInvitation($groupId, $userId);
     }
 

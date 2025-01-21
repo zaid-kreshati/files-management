@@ -16,7 +16,8 @@ use App\Models\File;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
-
+use Barryvdh\DomPDF\Facade\Pdf;
+use App\Models\AuditTrail;
 
 class FileController extends Controller
 {
@@ -60,6 +61,7 @@ class FileController extends Controller
             return $this->successResponse($result, 'File deleted successfully.');
         } catch (Exception $e) {
             return $this->errorResponse($e->getMessage(), 'File deletion failed.');
+
         }
     }
 
@@ -88,6 +90,7 @@ class FileController extends Controller
      */
     public function getApprovedFiles($groupId): View
     {
+
         $group = $this->groupService->getGroupById($groupId);
         $owner = $group->owner_id === Auth::id();
 
@@ -110,6 +113,7 @@ class FileController extends Controller
             'pendingFiles' => $pendingFiles,
             'owner' => $owner,
         ]);
+
     }
 
 
@@ -131,12 +135,14 @@ class FileController extends Controller
     public function downloadFile($fileId): \Symfony\Component\HttpFoundation\BinaryFileResponse|array
     {
         return $this->openDownloadFileService->downloadFile($fileId);
+
     }
 
     public function restoreBackup(string $backupPath, string $filePath): array
     {
         return $this->openDownloadFileService->restoreBackup($backupPath, $filePath);
     }
+
 
     public function export($fileId, Request $request)
     {

@@ -75,6 +75,7 @@ class CheckOutService
         $existingFile->update(['status' => 'free']);
     }
 
+
     /**
      * Handle file comparison and backup.
      */
@@ -117,6 +118,7 @@ class CheckOutService
 
     private function compareFiles11(string $existingContent, string $uploadedContent): string
     {
+      
         $differ = new Differ(new UnifiedDiffOutputBuilder);
         // Generate the diff as a string
         return $differ->diff($existingContent, $uploadedContent);

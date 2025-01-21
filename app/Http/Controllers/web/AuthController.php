@@ -10,12 +10,17 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use App\Services\GroupService;
 use App\Services\InvitationService;
+use App\Models\RefreshToken;
+use Illuminate\Support\Str;
+use App\Models\User;
+use App\Traits\JsonResponseTrait;
 
 class AuthController extends Controller
 {
     protected InvitationService $invitationService;
     protected GroupService $groupService;
     protected AuthService $authService;
+
 
     public function __construct(AuthService $authService, GroupService $groupService, InvitationService $invitationService)
     {
@@ -32,11 +37,13 @@ class AuthController extends Controller
     public function registerAdmin(RegisterRequest $request): View
     {
         return $this->registerUser($request->validated(), 'admin');
+
     }
 
     public function registerClient(RegisterRequest $request): View
     {
         return $this->registerUser($request->validated(), 'user');
+
     }
 
     /**
@@ -51,15 +58,38 @@ class AuthController extends Controller
     public function logout(): View
     {
         Auth::logout();
+        $refreshToken = $request->cookie('refresh_token');
+        if ($refreshToken) {
+            RefreshToken::where('token', $refreshToken)->delete();
+        }
         return view('login')->with('success', 'Logged out successfully');
     }
 
     public function login(LoginRequest $request): View
     {
         $authData = $this->authService->login($request->validated());
+        Log::info("authData");
+        Log::info($authData);
         if ($authData) {
-            $viewData = $this->prepareHomeViewData();
-            return view('home', $viewData);
+
+            $groups = null;
+            $status = "groups";
+            $userId = Auth::user()->id;
+            $invitationRequests = $this->invitationService->getUserInvitations($userId);
+            return response()
+                ->view('home', ['groups' => $groups,'status' => $status,'invitationRequests' => $invitationRequests,
+                    'accessToken' => $authData['accessToken']
+                ])->cookie(
+                    'refresh_token', // Cookie name
+                    $authData['refreshToken'], // Cookie value
+                    60 * 24 * 7, // Expiration time in minutes (7 days)
+                    null, // Path (default is '/')
+                    null, // Domain (default is current domain)
+                    true, // Secure (set to true for HTTPS only)
+                    true  // HttpOnly (prevents JavaScript access to the cookie)
+                );
+        } else {
+            return view('login')->with('error', 'Invalid credentials');
         }
         return view('login')->with('error', 'Invalid credentials');
     }
@@ -84,4 +114,30 @@ class AuthController extends Controller
     }
 
 
+
+
+    public function refreshToken(Request $request)
+    {
+        $refreshToken = $request->cookie('refresh_token');
+        $storedToken = RefreshToken::where('token', $refreshToken)->first();
+
+
+        if (!$storedToken || $storedToken->expires_at < now()) {
+            return $this->errorResponse('Refresh token is invalid or expired', 401);
+        }
+
+        $user = $storedToken->user;
+
+        $newAccessToken = $user->createToken('access-token')->plainTextToken;
+        $newRefreshToken = Str::random(60);
+
+        $storedToken->update(['token' => $newRefreshToken, 'expires_at' => now()->addDays(7)]);
+
+        $response = [
+            'access_token' => $newAccessToken,
+            'refresh_token' => $newRefreshToken,
+        ];
+        return $this->successResponse($response, 'Token refreshed successfully', 200)
+            ->cookie('refresh_token', $newRefreshToken, 60 * 24 * 7, null, null, true, true);
+    }
 }

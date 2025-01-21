@@ -42,13 +42,14 @@ class CheckFileService
     }
 
 
-    public function validateCheckInRequest(Request $request): array
+     public function validateCheckInRequest(Request $request): array
     {
         return $request->validate([
             'file_ids' => 'required',
             'description' => 'string|max:255|nullable',
         ]);
     }
+
 
     /**
      * Normalize file IDs into an array.

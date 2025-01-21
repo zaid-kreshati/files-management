@@ -86,4 +86,9 @@ class CheckOutRepository
             'action_time' => $actionTime,
         ]);
     }
+
+    public function getLastVersion(int $fileId)
+    {
+        return Backup::where('file_id', $fileId)->orderBy('created_at', 'desc')->first();
+    }
 }

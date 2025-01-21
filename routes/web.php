@@ -27,6 +27,10 @@ Route::controller(AuthController::class)->group(function () {
     Route::post('/logout', 'logout')->name('logout');
     Route::get('/home', 'home')->name('home')->middleware('auth:sanctum');
     Route::post('/loginApi', 'loginApi')->name('loginApi');
+
+    Route::post('/refresh-token', 'refreshToken');
+
+
 });
 
 Route::controller(GroupController::class)->prefix('groups')->name('groups')->group(function () {
@@ -61,6 +65,7 @@ Route::controller(FileController::class)->prefix('files')->group(function(){
  Route::get('/download/{fileId}', 'downloadFile')->name('download.file');
  // Restore backup
  Route::post('/restore-backup', 'restoreBackup')->name('restore.backup');
+ Route::post('/audit/export/{fileId}', 'export')->name('audit.export');
 
 
 

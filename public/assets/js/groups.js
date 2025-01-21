@@ -34,7 +34,7 @@ function createGroupCard(group) {
                 </div>
 
                 <div >
-                        <h3 class="text-center" style="color:var(--text-color1);">${group.name}</h3>
+                        <h3 class="text-center" id="groupName-${group.id}" style="color:var(--text-color1);">${group.name}</h3>
                 </div>
 
             </div>
@@ -126,41 +126,38 @@ $(document).on('click', '.edit-group-btn', function () {
 });
 
 
-    // Listen for the edit group form submission
 $('#editGroupForm').on('submit', function (e) {
-    e.preventDefault(); // Prevent the default form submission
+    e.preventDefault();
 
     const submitButton = $(this).find('button[type="submit"]');
     submitButton.prop('disabled', true).text('Updating...');
 
-    console.log('Edit group form submitted');
-
-    // Retrieve group ID and name
-    const groupId = $(this).data('id'); // Ensure the form has the correct data-id attribute
+    const groupId = $(this).data('id');
     const groupName = $('#editGroupName').val();
 
-    console.log(groupId, groupName);
 
     $.ajax({
-        url: `/groups/${groupId}/edit`, // Correct API endpoint
+        url: `/groups/${groupId}/edit`,
         method: 'PUT',
         data: {
             name: groupName,
             _token: getCsrfToken()
         },
-        success: function (response) {
-            console.log('Group updated successfully:', response);
+        success: function () {
 
-            // Hide the modal
+            const groupElement = $(`#groupName-${groupId}`);
+            console.log('groupElement',groupElement);
+            if (groupElement.length > 0) {
+                groupElement.text(groupName);
+                console.log(`Updated group name to: ${groupName}`);
+            } else {
+                console.error(`Element with ID groupName-${groupId} not found.`);
+            }
+
             $('#editGroupModal').modal('hide');
-
-            // Clear the input field
             $('#editGroupName').val('');
 
-            // Update the group name on the page dynamically
-            $(`#group-${groupId} .fw-bolder`).text(groupName);
 
-            // Show success notification
             Swal.fire({
                 width: '70%',
                 title: 'Success',
@@ -171,7 +168,6 @@ $('#editGroupForm').on('submit', function (e) {
         error: function (xhr, status, error) {
             console.error('AJAX Error:', { status, error, xhr });
 
-            // Show error notification
             Swal.fire({
                 width: '70%',
                 title: 'Error',
@@ -184,6 +180,8 @@ $('#editGroupForm').on('submit', function (e) {
         }
     });
 });
+
+
 
 
 // Delete group logic
@@ -329,7 +327,7 @@ function loadMoreGroups() {
                     },
                     success: function (response) {
                         console.log(response.data);
-                        groupContainer.html(response.data);
+                        $('#group-section').html(response.data);
                     },
                     error: function () {
                         alert('An error occurred while searching. Please try again.');

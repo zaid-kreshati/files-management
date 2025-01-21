@@ -15,7 +15,6 @@ use App\Models\RefreshToken;
 use Illuminate\Support\Str;
 use App\Models\User;
 use App\Traits\JsonResponseTrait;
-
 class AuthController extends Controller
 {
     use JsonResponseTrait;
@@ -64,8 +63,6 @@ class AuthController extends Controller
     public function login(LoginRequest $request)
     {
         $authData = $this->authService->login($request->validated());
-        Log::info("authData");
-        Log::info($authData);
         if ($authData) {
             $groups = null;
             $status = "groups";

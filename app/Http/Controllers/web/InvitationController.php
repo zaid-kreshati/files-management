@@ -72,12 +72,9 @@ class InvitationController extends Controller
             $invitation = Invitation::find($invitationId);
             $group = $invitation->group;
 
-            $pendingFiles = $this->fileService->getPendingFiles($group->id);
-
             $response = [
                 'status' => $status,
                 'group' => $group,
-                'pendingFiles' => $pendingFiles,
             ];
 
 

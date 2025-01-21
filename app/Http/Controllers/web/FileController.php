@@ -197,7 +197,7 @@ class FileController extends Controller
         // Retrieve audit trails related to the file
         $audit = AuditTrail::where('file_id', $fileId)->get();
 
-     
+
 
         $file_name = $request->input('file_name');
         // Load a view and pass the audit data

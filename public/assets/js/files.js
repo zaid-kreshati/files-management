@@ -385,7 +385,7 @@ $("#checkInFileBtn").on("click", function () {
                 text: "Files checked in successfully!",
                 icon: "success",
             });
-            console.log(response);
+            console.log(response.data);
             $("#files-section").html(response.data);
             //location.reload(); // Reload the page to reflect changes
         },

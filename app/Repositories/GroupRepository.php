@@ -67,7 +67,6 @@ class GroupRepository implements GroupRepositoryInterface
         $group = Group::find($id);
         $group->name = $data['name'];
         $group->save();
-        Log::info($group);
     }
 
     public function search(string $search): Collection

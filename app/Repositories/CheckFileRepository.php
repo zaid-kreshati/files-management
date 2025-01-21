@@ -7,6 +7,7 @@ use App\Models\Backup;
 use App\Models\AuditTrail;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
+use Illuminate\Support\Facades\Log;
 class CheckFileRepository
 {
     public function findById(int $id): ?File
@@ -21,6 +22,7 @@ class CheckFileRepository
 
     public function updateFileStatus(File $file, string $status): bool
     {
+        Log::info('updateFileStatus', ['file' => $file, 'status' => $status]);
         $file->status = $status;
         $file->checked_in_by = Auth::id();
         $file->checked_in_at = now();

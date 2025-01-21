@@ -6,6 +6,7 @@ use App\Repositories\CheckFileRepository;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 class CheckFileService
 {
     protected $checkFileRepository;
@@ -17,6 +18,7 @@ class CheckFileService
 
     public function checkInFiles(array $fileIds, string $description = 'description')
     {
+        Log::info('checkInFiles');
         DB::beginTransaction();
 
         try {

@@ -24,7 +24,7 @@ class ValidateAccessToken
             }
 
             // Optionally, you can set the user in the request for further use
-            $request->user = $decoded->user_id;
+            //$request->user = $decoded->user_id;
         } catch (\Exception $e) {
             return response()->json(['message' => 'Invalid access token'], 401);
         }

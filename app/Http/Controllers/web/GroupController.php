@@ -133,7 +133,7 @@ class GroupController extends Controller
             return $this->successResponse(['success' => true]);
         }else{
             $message='You are not the owner of this group';
-            return $this->errorResponse($message,403);
+            return $this->errorResponse($message,404);
         }
     }
 }

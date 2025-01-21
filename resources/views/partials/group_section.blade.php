@@ -38,9 +38,9 @@
                             </div>
 
                             <!-- Group Name -->
-                            <div class="text-center" id="group-name-{{ $group->id }}" >
-                                    <h3 style="color: black">{{ $group->name }}</h3>
-                                </div>
+                            <div >
+                                <h3 class="text-center" id="groupName-{{ $group->id }}" style="color:var(--text-color1);">{{ $group->name }}</h3>
+                            </div>
                         </div>
                     </div>
                 @endforeach

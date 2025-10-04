@@ -10,7 +10,7 @@ class File extends Model
     use HasFactory;
 
 
-    protected $fillable = ['name', 'path', 'status', 'checked_in_by', 'checked_in_at', 'group_id' , 'approval_status'];
+    protected $fillable = ['name', 'path', 'status', 'checked_in_by', 'checked_in_at', 'group_id' , 'approval_status','checked_in_until'];
     protected $table = 'files';
     public function groups()
     {

@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'firebase' => [
+    'credentials' => storage_path('firebase/service-account.json'),
+    ],
+
+
 ];

@@ -1,5 +1,5 @@
-  <!-- Group Cards Section -->
-  <section class="py-5 " id="group-section">
+<!-- Group Cards Section -->
+<section class="py-5 " id="group-section">
     <div class="container px-4 px-lg-5 mt-5">
         <div class="row gx-4 gx-lg-5 row-cols-2 row-cols-md-3 row-cols-xl-4 justify-content-center"
             id="groupcontainer">
@@ -18,13 +18,13 @@
                                         <button class="dropdown-item edit-group-btn"
                                             data-id="{{ $group->id }}" data-name="{{ $group->name }}"
                                             data-bs-toggle="modal" data-bs-target="#editGroupModal">
-                                            Edit Group
+                                            {{ __('Edit Group') }}
                                         </button>
                                     </li>
                                     <li>
                                         <button class="dropdown-item delete-group-btn"
                                             data-id="{{ $group->id }}">
-                                            Delete Group
+                                            {{ __('Delete Group') }}
                                         </button>
                                     </li>
                                 </ul>
@@ -51,7 +51,7 @@
     <!-- Loading Spinner -->
     <div id="loading-spinner" class="text-center" style="display: content;">
         <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Loading...</span>
+            <span class="visually-hidden">{{ __('Loading...') }}</span>
         </div>
     </div>
 </section>

@@ -21,6 +21,8 @@ return new class extends Migration
 
             // $table->foreignId('groub_id')->references('id')->on('groups')->onDelete('cascade');
             $table->foreign('checked_in_by')->references('id')->on('users')->onDelete('cascade');
+            $table->timestamp('checked_in_until')->nullable();
+
             $table->timestamps();
         });
     }

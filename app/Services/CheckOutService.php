@@ -67,7 +67,10 @@ class CheckOutService
         Log::info($uploadedFileContent);
 
         // Read contents of the existing file
-        $existingFileContent = Storage::get($existingFile->path);
+        // $existingFileContent = Storage::get($existingFile->path);
+        $lastVersion = $this->checkOutRepository->getLastVersion($existingFile->id);
+        $existingFileContent = file_get_contents($lastVersion->backup_path);
+
 
         // Compare the files
         $differences = $this->compareFiles11($existingFileContent, $uploadedFileContent);
@@ -86,7 +89,10 @@ class CheckOutService
 
         // Replace the file (overwrite the existing path)
         // $newPath = $uploadedFile->storeAs('files', $fileName);
-        $existingFile->update([ 'status' => 'free']);
+        $existingFile->update([
+            'status' => 'free',
+            'checked_in_until' => null,
+        ]);
 
 
         // Log changes in the audit trail
@@ -114,6 +120,10 @@ class CheckOutService
 
     private function compareFiles11(string $existingContent, string $uploadedContent): string
     {
+        Log::info('existingContent');
+        Log::info($existingContent);
+        Log::info('uploadedContent');
+        Log::info($uploadedContent);
         $differ = new Differ(new UnifiedDiffOutputBuilder);
 
         // Generate the diff as a string

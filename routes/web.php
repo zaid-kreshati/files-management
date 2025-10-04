@@ -7,9 +7,10 @@ use App\Http\Controllers\web\FileController;
 use App\Http\Controllers\web\InvitationController;
 use App\Http\Controllers\web\ChecksFilesController;
 use App\Http\Controllers\web\checkOutController;
-
-
-
+use App\Http\Controllers\web\NotificationController;
+use App\Http\Controllers\web\LanguageController;
+use App\Http\Middleware\LanguageMiddleware;
+use App\Http\Middleware\LogRequestResponse;
 
 Route::get('/', function () {
     return view('login');
@@ -19,7 +20,7 @@ Route::get('/index', function () {
 });
 
 
-Route::controller(AuthController::class)->group(function () {
+Route::controller(AuthController::class)->middleware(LogRequestResponse::class)->group(function () {
     Route::get('/register/form', 'registerForm')->name('register.form');
     Route::post('/register/user', 'registerClient')->name('register.client');
     Route::post('/register/admin', 'registerAdmin')->name('register.admin');
@@ -27,10 +28,12 @@ Route::controller(AuthController::class)->group(function () {
     Route::post('/logout', 'logout')->name('logout');
     Route::get('/home', 'home')->name('home')->middleware('auth:sanctum');
     Route::post('/loginApi', 'loginApi')->name('loginApi');
+    Route::post('/refresh-token', 'refreshToken');
+
 
 });
 
-Route::controller(GroupController::class)->prefix('groups')->name('groups')->group(function () {
+Route::controller(GroupController::class)->prefix('groups')->name('groups')->middleware(LogRequestResponse::class)->group(function () {
     Route::post('/store', 'store')->name('store');
     Route::delete('{groupId}/delete', 'destroy')->name('destroy');
     Route::get('/show/{id}', 'show')->name('show');
@@ -43,7 +46,7 @@ Route::controller(GroupController::class)->prefix('groups')->name('groups')->gro
 
 });
 
-Route::controller(FileController::class)->prefix('files')->group(function(){
+Route::controller(FileController::class)->prefix('files')->middleware(LogRequestResponse::class)->group(function(){
 
      // Upload Files
  Route::post('/{groupId}/upload',  'uploadFile');
@@ -62,12 +65,13 @@ Route::controller(FileController::class)->prefix('files')->group(function(){
  Route::get('/download/{fileId}', 'downloadFile')->name('download.file');
  // Restore backup
  Route::post('/restore-backup', 'restoreBackup')->name('restore.backup');
+ Route::post('/audit/export/{fileId}', 'export')->name('audit.export');
 
 
 
 });
 
-Route::controller(InvitationController::class)->prefix('group')->group(function(){
+Route::controller(InvitationController::class)->prefix('group')->middleware(LogRequestResponse::class)->group(function(){
 
      // Invitaiton to group
      Route::post('/inviteuser', 'sendInvitation');
@@ -81,14 +85,20 @@ Route::controller(InvitationController::class)->prefix('group')->group(function(
 });
 
 // Check in file
-Route::controller(ChecksFilesController::class)->group(function(){
+Route::controller(ChecksFilesController::class)->middleware(LogRequestResponse::class)->group(function(){
 Route::post('/files/check-in' ,  'checkInFiles')->middleware('auth:sanctum');
 Route::post('files/check-out/{groupId}/file' ,  'replaceFile')->middleware('auth:sanctum');
 });
 
-Route::controller(checkOutController::class)->group(function(){
+Route::controller(checkOutController::class)->middleware(LogRequestResponse::class)->group(function(){
     Route::post('files/check-out/{groupId}/file' ,  'checkOut')->middleware('auth:sanctum');
 });
+
+
+Route::get('/switch-language/{locale}', [LanguageController::class, 'switchLanguage'])->middleware(LanguageMiddleware::class)->name('switch.language');
+
+
+
 
 
 

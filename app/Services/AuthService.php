@@ -33,11 +33,12 @@ class AuthService
     {
         if (Auth::attempt(['email' => $data['email'], 'password' => $data['password']])) {
             $user = Auth::user();
-            $token = $user->createToken('API Token')->plainTextToken;
-            return ['user' => $user, 'token' => $token];
+            $accessToken = $user->createToken('API Token')->plainTextToken;
+            $refreshToken = $user->createToken('API Token')->plainTextToken;
+            return ['user' => $user, 'accessToken' => $accessToken,'refreshToken'=>$refreshToken];
         }
 
-        return null;
+        return ;
     }
 
     public function logout()

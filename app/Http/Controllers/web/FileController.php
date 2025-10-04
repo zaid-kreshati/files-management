@@ -84,9 +84,6 @@ class FileController extends Controller
         }
     }
 
-
-
-
     public function getFilesForApproval($groupId)
     {
         try {
@@ -106,6 +103,7 @@ class FileController extends Controller
         $group = $this->groupService->getGroupById($groupId);
         if ($group->owner_id == $userId) {
             $owner = true;
+
             $pendingFiles = $this->fileService->getPendingFiles($groupId);
         } else {
             $owner = false;
@@ -137,12 +135,12 @@ class FileController extends Controller
                 $checkedInBy = $file->checked_in_by; // Assuming a 'checked_in_by' field exists in the file model
                 $currentUser = Auth::id();
                 if ($checkedInBy == $currentUser) {
-                    $command = escapeshellcmd("open -a TextEdit $filePath");
+                    $command = "open -a TextEdit " . escapeshellarg($filePath);
                 } else {
                     $command = null;
                 }
             }
-
+            Log::info($command);
             shell_exec($command);
             return redirect()->back();
         } catch (Exception $e) {
@@ -154,7 +152,8 @@ class FileController extends Controller
     {
         $path = $request->input('path');
         Log::info($path);
-        $command = escapeshellcmd("open -a TextEdit $path");
+        $command = "open -a 'Google Chrome' " . escapeshellarg($path);
+
         // Execute the command
         shell_exec($command);
         return redirect()->back();
@@ -184,8 +183,6 @@ class FileController extends Controller
     {
         // Retrieve audit trails related to the file
         $audit = AuditTrail::where('file_id', $fileId)->get();
-
-
 
         $file_name = $request->input('file_name');
         // Load a view and pass the audit data

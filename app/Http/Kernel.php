@@ -14,14 +14,26 @@ class Kernel extends HttpKernel
      *
      * @var array<int, class-string|string>
      */
+
+
+
+     protected $routeMiddleware = [
+        'log.requests' => \App\Http\Middleware\LogRequestResponse::class,
+    ];
+
+
     protected $middleware = [
+
         // \App\Http\Middleware\TrustHosts::class,
+        \App\Http\Middleware\LogRequestResponse::class,
+
         \App\Http\Middleware\TrustProxies::class,
         \Illuminate\Http\Middleware\HandleCors::class,
         \App\Http\Middleware\PreventRequestsDuringMaintenance::class,
         \Illuminate\Foundation\Http\Middleware\ValidatePostSize::class,
         \App\Http\Middleware\TrimStrings::class,
         \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
+
     ];
 
     /**
@@ -31,13 +43,14 @@ class Kernel extends HttpKernel
      */
     protected $middlewareGroups = [
         'web' => [
+            \App\Http\Middleware\LanguageMiddleware::class,
+
             \App\Http\Middleware\EncryptCookies::class,
             \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
             \Illuminate\Session\Middleware\StartSession::class,
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \App\Http\Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
-
         ],
 
         'api' => [
@@ -56,6 +69,8 @@ class Kernel extends HttpKernel
      */
     protected $middlewareAliases = [
         'validateToken' => \App\Http\Middleware\ValidateToken::class,
+        'language' => \App\Http\Middleware\LanguageMiddleware::class,
+        'log.requests' => \App\Http\Middleware\LogRequestResponse::class,
 
         'auth' => \App\Http\Middleware\Authenticate::class,
 

@@ -22,6 +22,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'fcm_token',
     ];
 
     /**
@@ -101,5 +102,6 @@ class User extends Authenticatable
     {
         return $this->hasMany(OperationsLog::class);
     }
+    
 
 }

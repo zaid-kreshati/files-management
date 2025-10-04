@@ -22,10 +22,12 @@ class CheckFileRepository
 
     public function updateFileStatus(File $file, string $status): bool
     {
-        Log::info('updateFileStatus', ['file' => $file, 'status' => $status]);
+        $hours = 1;
         $file->status = $status;
         $file->checked_in_by = Auth::id();
         $file->checked_in_at = now();
+        $file->checked_in_until = now()->addHours($hours);
+
         return $file->save();
     }
 

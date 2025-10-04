@@ -52,6 +52,20 @@ return [
 
     'channels' => [
 
+        'request_log' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/request.log'),  // Separate file for requests
+            'level' => 'debug',
+            'days' => 14,  // Retain logs for 14 days
+        ],
+
+        'response_log' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/response.log'),  // Separate file for responses
+            'level' => 'debug',
+            'days' => 14,  // Retain logs for 14 days
+        ],
+
         'stack' => [
             'driver' => 'stack',
             'channels' => explode(',', env('LOG_STACK', 'single')),

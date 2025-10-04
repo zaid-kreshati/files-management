@@ -34,9 +34,14 @@ function createFileCard(file) {
 
                                       <li>
                                         <div>
-                                            <a  class="dropdown-item download-file-btn" data-file-id="${file.id}">
-                                                Download File
-                                            </a>
+                                        ${file.status === 'free' ? `
+                                            <a href="/files/download/${file.id}" class="dropdown-item download-file-success" data-file-id="${file.id}">
+                                              Download File
+                                            </a>` : `
+                                            <button class="dropdown-item download-file-error" data-file-id="${file.id}">
+                                              Download File
+                                            </button>`}
+
                                         </div>
                                     </li>
                                     <li>
@@ -44,6 +49,16 @@ function createFileCard(file) {
                                             data-bs-target="#backupsModal" data-file="${file}">
                                             Backups
                                         </a>
+                                    </li>
+                                    <li>
+                                    <form action="/files/audit/export/${file.id}" method="post">
+                                            <input type="hidden" name="_token" value="${getCsrfToken()}">
+                                            <input type="hidden" name="file_id" value="${file.id}">
+                                            <input type="hidden" name="file_name" value="${file.name}">
+                                            <button class="dropdown-item export-file-btn" type="submit">
+                                                Export audit as PDF
+                                            </button>
+                                        </form>
                                     </li>
 
 
@@ -99,7 +114,7 @@ document
                 if (response.success) {
                     console.log(response);
                     Swal.fire({
-                        width: "70%",
+                        width: "50%",
                         title: "Success",
                         text: response.message,
                         icon: "success",
@@ -115,7 +130,7 @@ document
                     }
                 } else {
                     Swal.fire({
-                        width: "70%",
+                        width: "50%",
                         title: "Error",
                         text: "Failed to upload file",
                         icon: "error",
@@ -155,7 +170,7 @@ $(document).ready(function () {
                 console.log(response);
                 if (response.success) {
                     Swal.fire({
-                        width: "70%",
+                        width: "50%",
                         title: "Success",
                         text:
                             "Invitation sent successfully to " +
@@ -165,7 +180,7 @@ $(document).ready(function () {
                     });
                 } else {
                     Swal.fire({
-                        width: "70%",
+                        width: "50%",
                         title: "Error",
                         text:
                             response.message ||
@@ -178,7 +193,7 @@ $(document).ready(function () {
             error: function () {
                 $("#userDropdown").val(null).trigger("change"); // Reset dropdown
                 Swal.fire({
-                    width: "70%",
+                    width: "50%",
                     title: "Error",
                     text: "An error occurred while sending the invitation.",
                     icon: "error",
@@ -193,7 +208,7 @@ $(document).on("click", ".delete-file-btn", function () {
     const fileId = $(this).data("id");
 
     Swal.fire({
-        width: "70%",
+        width: "50%",
         title: "Are you sure?",
         text: "This will delete the file permanently.",
         icon: "warning",
@@ -213,14 +228,14 @@ $(document).on("click", ".delete-file-btn", function () {
                         });
 
                         Swal.fire({
-                            width: "70%",
+                            width: "50%",
                             title: "Deleted!",
                             text: "File has been deleted.",
                             icon: "success",
                         });
                     } else {
                         Swal.fire({
-                            width: "70%",
+                            width: "50%",
                             title: "Error",
                             text: "Failed to delete file.",
                             icon: "error",
@@ -230,9 +245,9 @@ $(document).on("click", ".delete-file-btn", function () {
                 error: function (xhr, status, error) {
                     console.error("AJAX Error:", { status, error, xhr });
                     Swal.fire({
-                        width: "70%",
+                        width: "50%",
                         title: "Error",
-                        text: "Something went wrong. Please try again.",
+                        text: error.responseJSON.message,
                         icon: "error",
                     });
                 },
@@ -254,12 +269,11 @@ function handleFileClick(fileId) {
         method: "GET",
         success: function (response) {
             console.log(response);
-            window.location.href = `/files/${fileId}/open`;
         },
         error: function (error) {
             console.error(error);
             Swal.fire({
-                width: "70%",
+                width: "50%",
                 title: "Error",
                 text: "An error occurred while opening the file.",
                 icon: "error",
@@ -285,19 +299,19 @@ $(document).on("click", "#pending-file-btn", function () {
                 console.log(response);
                 $(`#pending-file-${fileId}`).remove();
                 if (approvalStatus === "approved") {
-                    $(`#file-${fileId}`).append(
-                        createFileCard(response.data.file)
+                    $(`#files-container`).append(
+                        createFileCard(response.data)
                     );
                 }
                 Swal.fire({
-                    width: "70%",
+                    width: "50%",
                     title: "Success",
                     text: response.message,
                     icon: "success",
                 });
             } else {
                 Swal.fire({
-                    width: "70%",
+                    width: "50%",
                     title: "Error",
                     text: response.message,
                     icon: "error",
@@ -337,7 +351,7 @@ $("#checkInFileBtn").on("click", function () {
     console.log("Group ID:", groupId);
     if (selectedFiles.length === 0) {
         Swal.fire({
-            width: "70%",
+            width: "50%",
             title: "No Files Selected",
             text: "Please select at least one file to check in.",
             icon: "warning",
@@ -356,7 +370,7 @@ $("#checkInFileBtn").on("click", function () {
         },
         success: function (response) {
             Swal.fire({
-                width: "70%",
+                width: "50%",
                 title: "Success",
                 text: "Files checked in successfully!",
                 icon: "success",
@@ -368,7 +382,7 @@ $("#checkInFileBtn").on("click", function () {
         error: function (error) {
             console.error(error);
             Swal.fire({
-                width: "70%",
+                width: "50%",
                 title: "Error",
                 text: "An error occurred while checking in files.",
                 icon: "error",
@@ -396,7 +410,7 @@ $("#checkOutFileForm").on("click", function (event) {
         },
         success: function (response) {
             Swal.fire({
-                width: "70%",
+                width: "50%",
                 title: "Success",
                 text: "Files checked out successfully!",
                 icon: "success",
@@ -406,7 +420,7 @@ $("#checkOutFileForm").on("click", function (event) {
         error: function (error) {
             console.error(error);
             Swal.fire({
-                width: "70%",
+                width: "50%",
                 title: "Error",
                 text: error.responseJSON.message,
                 icon: "error",
@@ -415,7 +429,8 @@ $("#checkOutFileForm").on("click", function (event) {
     });
 });
 
-$(document).on("click", ".download-file-btn", function () {
+
+$(document).on("click", ".download-file-success", function () {
     const fileId = $(this).data("file-id");
     console.log("File ID:", fileId);
     $.ajax({
@@ -424,7 +439,7 @@ $(document).on("click", ".download-file-btn", function () {
         success: function (response) {
             console.log(response);
             Swal.fire({
-                width: "70%",
+                width: "50%",
                 title: "Success",
                 text: "The file is downloading",
                 icon: "success",
@@ -433,7 +448,7 @@ $(document).on("click", ".download-file-btn", function () {
         error: function (error) {
             console.error(error);
             Swal.fire({
-                width: "70%",
+                width: "50%",
                 title: "Error",
                 text: "the file is not free",
                 icon: "error",
@@ -442,9 +457,29 @@ $(document).on("click", ".download-file-btn", function () {
     });
 });
 
+$(document).on("click", ".download-file-error", function () {
+    Swal.fire({
+        width: "50%",
+        title: "Error",
+        text: "the file is not free",
+        icon: "error",
+    });
+});
+
 $(document).on("click", ".back-ups-file-btn", function () {
     const file = $(this).data("file");
     console.log(file);
+    const fileStatus = $(this).data("file-status");
+
+    if (fileStatus === "checked_in") {
+        Swal.fire({
+            width: "50%",
+            title: "Error",
+            text: "the file is checked in",
+            icon: "error",
+        });
+        return;
+    }
     $("#backupsModal").modal("show");
     $("#modalFileName").text(file.name);
     $("#modalFileId").text(file.id);
@@ -511,7 +546,7 @@ $(document).on("click", ".restore-backup-btn", function () {
         success: function (response) {
             $("#backupsModal").modal("hide");
             Swal.fire({
-                width: "70%",
+                width: "50%",
                 title: "Success",
                 text: "Backup restored successfully",
                 icon: "success",
@@ -519,7 +554,7 @@ $(document).on("click", ".restore-backup-btn", function () {
         },
         error: function (error) {
                 Swal.fire({
-                width: "70%",
+                width: "50%",
                 title: "Error",
                 text: "An error occurred while restoring the backup",
                 icon: "error",

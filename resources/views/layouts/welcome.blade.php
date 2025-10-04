@@ -1,12 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+    <html lang="{{ app()->getLocale() }}">
+
+
 
 <head>
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <title>Index - Arsha Bootstrap Template</title>
-    <meta name="description" content="">
-    <meta name="keywords" content="">
+    <title>{{ __('Index - Arsha Bootstrap Template') }}</title>
+    <meta name="description" content="{{ __('') }}">
+    <meta name="keywords" content="{{ __('') }}">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <!-- Favicons -->
@@ -28,15 +30,6 @@
     <!-- Main CSS File -->
     <link href="{{ asset('assets/css/main.css') }}" rel="stylesheet">
 
-
-    <!-- =======================================================
-    * Template Name: Arsha
-    * Template URL: https://bootstrapmade.com/arsha-free-bootstrap-html-template-corporate/
-    * Updated: Aug 07 2024 with Bootstrap v5.3.3
-    * Author: BootstrapMade.com
-    * License: https://bootstrapmade.com/license/
-    ======================================================== -->
-
 </head>
 <body class="index-page">
 
@@ -47,8 +40,8 @@
 
       <div class="container">
 
-        <h1>welcome</h1>
-        <p>File Management System</p>
+        <h1>{{ __('welcome') }}</h1>
+        <p>{{ __('File Management System') }}</p>
         <div class="row gy-4">
           <div class="col-lg-6 order-2 order-lg-1 d-flex flex-column justify-content-center" data-aos="zoom-out">
 
@@ -56,7 +49,7 @@
 
           </div>
           <div class="col-lg-6 order-1 order-lg-2 hero-img" data-aos="zoom-out" data-aos-delay="200">
-            <img src="{{ asset('assets/img/hero-img.png') }}" class="img-fluid animated" alt="">
+            <img src="{{ asset('assets/img/hero-img.png') }}" class="img-fluid animated" alt="{{ __('Hero Image') }}">
           </div>
         </div>
       </div>

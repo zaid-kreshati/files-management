@@ -9,7 +9,7 @@ class Notification extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['file_id', 'user_id', 'title', 'message'];
+    protected $fillable = ['fcm_token', 'file_id', 'user_id', 'title', 'message'];
     protected $table = 'notifications';
     public function file()
     {

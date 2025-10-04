@@ -8,7 +8,7 @@
                 <img src="{{ asset('icons/search_icon.png') }}" alt="search_icon" class="search-icon">
             </div>
             <button id="createGroupBtn" class="btnall create-group-btn" data-bs-toggle="modal"
-                data-bs-target="#createGroupModal">Create New Group</button>
+                data-bs-target="#createGroupModal">{{ __('Create New Group') }}</button>
 
             <!-- Group Cards Section -->
             <section class="py-5 ">
@@ -30,13 +30,13 @@
                                                     <button class="dropdown-item edit-group-btn"
                                                         data-id="{{ $group->id }}" data-name="{{ $group->name }}"
                                                         data-bs-toggle="modal" data-bs-target="#editGroupModal">
-                                                        Edit Group
+                                                        {{ __('Edit Group') }}
                                                     </button>
                                                 </li>
                                                 <li>
                                                     <button class="dropdown-item delete-group-btn"
                                                         data-id="{{ $group->id }}">
-                                                        Delete Group
+                                                        {{ __('Delete Group') }}
                                                     </button>
                                                 </li>
                                             </ul>
@@ -51,8 +51,8 @@
 
                                         <!-- Group Name -->
                                         <div class="text-center" id="group-name-{{ $group->id }}">
-                                                <h3>{{ $group->name }}</h3>
-                                            </div>
+                                            <h3>{{ $group->name }}</h3>
+                                        </div>
                                     </div>
                                 </div>
                             @endforeach
@@ -63,7 +63,7 @@
                 <!-- Loading Spinner -->
                 <div id="loading-spinner" class="text-center" style="display: content;">
                     <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Loading...</span>
+                        <span class="visually-hidden">{{ __('Loading...') }}</span>
                     </div>
                 </div>
             </section>
@@ -71,19 +71,19 @@
 
         <!-- Invitation Requests Section -->
         <div class="right container">
-            <h2 class="text-center" style="color: #000000;;">Invitation Requests:</h2>
+            <h2 class="text-center" style="color: #000000;">{{ __('Invitation Requests:') }}</h2>
             <div id="invitation-request-container">
-                    <table class="table table-bordered  table-hover">
-                        <thead class="table-head text-center">
-                            <tr>
-                                <th scope="col">From</th>
-                                <th scope="col">Group</th>
-                                <th scope="col">Accept</th>
-                                <th scope="col">Reject</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @if (!is_null($invitationRequests) && count($invitationRequests) > 0)
+                <table class="table table-bordered table-hover">
+                    <thead class="table-head text-center">
+                        <tr>
+                            <th scope="col">{{ __('From') }}</th>
+                            <th scope="col">{{ __('Group') }}</th>
+                            <th scope="col">{{ __('Accept') }}</th>
+                            <th scope="col">{{ __('Reject') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!is_null($invitationRequests) && count($invitationRequests) > 0)
                             @foreach ($invitationRequests as $invitationRequest)
                                 <tr class="table-body align-middle"
                                     id="invitation-request-{{ $invitationRequest->id }}">
@@ -104,13 +104,12 @@
                         @else
                             <tr>
                                 <td colspan="4" class="text-center" style="background-color: #f8f9fa;">
-                                    <h6>not found</h6>
+                                    <h6>{{ __('Not Found') }}</h6>
                                 </td>
                             </tr>
                         @endif
                     </tbody>
                 </table>
-
             </div>
         </div>
     </div>

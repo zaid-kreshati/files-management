@@ -1,9 +1,9 @@
-<section  id="files-section">
+<section id="files-section">
     <div class="container px-4 px-lg-5 mt-5">
         <div class="row gx-4 gx-lg-5 row-cols-2 row-cols-md-3 row-cols-xl-4" id="files-container">
             @if ($files)
                 @foreach ($files as $file)
-                    <div class="col mb-5" >
+                    <div class="col mb-5">
                         <div class="card h-100 file-card" id="file-{{ $file->id }}" style="cursor: pointer;"
                             data-file-id="{{ $file->id }}">
                             <div class="dropdown">
@@ -14,21 +14,36 @@
                                 <ul class="dropdown-menu" aria-labelledby="dropdown-{{ $file->id }}">
                                     <li>
                                         <button class="dropdown-item delete-file-btn" data-id="{{ $file->id }}">
-                                            Delete File
+                                            {{ __('delete_file') }}
                                         </button>
                                     </li>
                                     <li>
-                                        <div>
-                                            <a  class="dropdown-item download-file-btn" data-file-id="{{ $file->id }}">
-                                                Download File
+                                        @if ($file->status == 'free')
+                                            <a href="{{ route('download.file', $file->id) }}"
+                                                class="dropdown-item download-file-success" data-file-id="{{ $file->id }}">
+                                                {{ __('download_file') }}
                                             </a>
-                                        </div>
+                                        @else
+                                            <button class="dropdown-item download-file-error" data-file-id="{{ $file->id }}">
+                                                {{ __('download_file') }}
+                                            </button>
+                                        @endif
                                     </li>
                                     <li>
-                                        <a class="dropdown-item back-ups-file-btn" data-bs-toggle="modal"
-                                            data-bs-target="#backupsModal" data-file="{{ json_encode($file) }}">
-                                            Backups
+                                        <a class="dropdown-item back-ups-file-btn" data-file="{{ json_encode($file) }}"
+                                            data-file-status="{{ $file->status }}">
+                                            {{ __('backups') }}
                                         </a>
+                                    </li>
+                                    <li>
+                                        <form action="{{ route('audit.export', $file->id) }}" method="post">
+                                            @csrf
+                                            <input type="hidden" name="file_id" value="{{ $file->id }}">
+                                            <input type="hidden" name="file_name" value="{{ $file->name }}">
+                                            <button class="dropdown-item export-file-btn" type="submit">
+                                                {{ __('export_audit') }}
+                                            </button>
+                                        </form>
                                     </li>
                                 </ul>
                             </div>
@@ -45,7 +60,7 @@
 
                             <div class="text-center">
                                 <!-- File status-->
-                                <h6>{{ 'Status: ' . $file->status }}</h6>
+                                <h6>{{ __('status') . ': ' . $file->status }}</h6>
                             </div>
 
                             <!-- Checkbox for selecting the file -->
@@ -60,8 +75,3 @@
         </div>
     </div>
 </section>
-
-
-
-
-

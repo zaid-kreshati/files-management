@@ -11,8 +11,12 @@ use App\Traits\JsonResponseTrait;
 use App\Models\File;
 use App\Models\Group;
 use App\Services\FileService;
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+
 class ChecksFilesController extends Controller
 {
+
     use JsonResponseTrait;
 
     protected $checkFileService;
@@ -42,8 +46,7 @@ class ChecksFilesController extends Controller
         Log::info("checkInFiles");
         Log::info($result);
         $groupId=$request->group_id;
-        Log::info("group id");
-        Log::info($groupId);
+
 
         $files = $this->fileService->getApprovedFiles($groupId);
         $html = view('partials.files_section', ['files' => $files,'groupId'=>$groupId])->render();

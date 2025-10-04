@@ -15,7 +15,7 @@ function createGroupCard(group) {
                         aria-expanded="false" data-id="${group.id}" data-name="${group.name}">
                     <ul class="dropdown-menu" aria-labelledby="dropdown-${group.id}">
                         <li>
-                            <button class="dropdown-item edit-group-btn" data-id="${group.id}" data-name="${group.name}" data-bs-toggle="modal" data-bs-target="#editGroupModal">
+                            <button class="dropdown-item edit-group-btn" data-id="${group.id}" data-name="${group.name}">
                                 Edit Group
                             </button>
                         </li>
@@ -58,8 +58,7 @@ $('#createGroupForm').on('submit', function (e) {
         success: function (response) {
             if (response.success) {
                 Swal.fire({
-                    width: '70%',
-                    html: '<p style="font-size: 1em;">Resize your screen to see the changes!</p>',
+                    width: '50%',
                     title: 'Success',
                     text: 'Group created successfully',
                     icon: 'success'
@@ -72,8 +71,7 @@ $('#createGroupForm').on('submit', function (e) {
 
             } else {
                 Swal.fire({
-                    width: '70%',
-                    html: '<p style="font-size: 1em;">Resize your screen to see the changes!</p>',
+                    width: '50%',
                     title: 'Error',
                     text: 'Failed to create group',
                     icon: 'error',
@@ -83,8 +81,7 @@ $('#createGroupForm').on('submit', function (e) {
         error: function (xhr, status, error) {
             console.error('AJAX Error:', { status, error, xhr });
             Swal.fire({
-                width: '70%',
-                html: '<p style="font-size: 1em;">Resize your screen to see the changes!</p>',
+                width: '50%',
                 title: 'Error',
                 text: 'Something went wrong. Please try again.',
                 icon: 'error',
@@ -112,8 +109,7 @@ $(document).on('click', '.edit-group-btn', function () {
                 else{
                     $('#editGroupModal').modal('hide');
                     Swal.fire({
-                        width: '70%',
-                        html: '<p style="font-size: 1em;">Resize your screen to see the changes!</p>',
+                        width: '50%',
                         title: 'Error',
                         text: 'You are not the owner of this group',
                         icon: 'error',
@@ -123,8 +119,7 @@ $(document).on('click', '.edit-group-btn', function () {
             error: function (error) {
                 console.log(error);
                 Swal.fire({
-                    width: '70%',
-                    html: '<p style="font-size: 1em;">Resize your screen to see the changes!</p>',
+                    width: '50%',
                     title: 'Error',
                     text: error.responseJSON.message,
                     icon: 'error',
@@ -133,6 +128,7 @@ $(document).on('click', '.edit-group-btn', function () {
         })
 
     });
+
 
 $('#editGroupForm').on('submit', function (e) {
     e.preventDefault();
@@ -167,8 +163,7 @@ $('#editGroupForm').on('submit', function (e) {
 
 
             Swal.fire({
-                width: '70%',
-                html: '<p style="font-size: 1em;">Resize your screen to see the changes!</p>',
+                width: '50%',
                 title: 'Success',
                 text: 'Group updated successfully!',
                 icon: 'success'
@@ -178,8 +173,7 @@ $('#editGroupForm').on('submit', function (e) {
             console.error('AJAX Error:', { status, error, xhr });
 
             Swal.fire({
-                width: '70%',
-                html: '<p style="font-size: 1em;">Resize your screen to see the changes!</p>',
+                width: '50%',
                 title: 'Error',
                 text: 'Something went wrong. Please try again.',
                 icon: 'error',
@@ -217,16 +211,14 @@ $(document).on('click', '.delete-group-btn', function () {
                             });
 
                             Swal.fire({
-                                width: '70%',
-                                html: '<p style="font-size: 1em;">Resize your screen to see the changes!</p>',
+                                width: '50%',
                                 title: 'Success',
                                 text: 'Group has been deleted.',
                                 icon: 'success'
                             });
                         } else {
                             Swal.fire({
-                                width: '70%',
-                                html: '<p style="font-size: 1em;">Resize your screen to see the changes!</p>',
+                                width: '50%',
                                 title: 'Error',
                                 text: 'Failed to delete group.',
                                 icon: 'error'
@@ -236,8 +228,7 @@ $(document).on('click', '.delete-group-btn', function () {
                     error: function (error) {
                         console.log(error);
                         Swal.fire({
-                            width: '70%',
-                            html: '<p style="font-size: 1em;">Resize your screen to see the changes!</p>',
+                            width: '50%',
                             title: 'Error',
                             text: error.responseJSON.message,
                             icon: 'error',
@@ -296,7 +287,7 @@ function loadMoreGroups() {
 // Search functionality
 (function () {
     const searchBox = $('#searchBox');
-    const groupContainer = $('#groupd');
+    const groupSection = $('#group-section');
 
     // Debounce function to limit the frequency of the search
     function debounce(func, wait) {
@@ -430,16 +421,14 @@ $(document).on('click', '#invitation-response-btn', function () {
                     $('#groupcontainer').append(createGroupCard(response.data.group));
 
                     Swal.fire({
-                        width: '70%',
-                        html: '<p style="font-size: 1em;">Resize your screen to see the changes!</p>',
+                        width: '50%',
                         title: 'Success',
                         text: response.message,
                         icon: 'success'
                     });
                 } else {
                     Swal.fire({
-                        width: '70%',
-                        html: '<p style="font-size: 1em;">Resize your screen to see the changes!</p>',
+                        width: '50%',
                         title: 'Rejected',
                         text: response.message,
                         icon: 'error'
